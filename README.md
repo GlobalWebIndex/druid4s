@@ -1,3 +1,7 @@
+## druid4s
+
+[![Build Status](https://travis-ci.org/GlobalWebIndex/druid4s.svg?branch=master)](https://travis-ci.org/GlobalWebIndex/druid4s)
+
 ```
 "net.globalwebindex" %% "druid4s" % "0.1.2-SNAPSHOT"
 ```
