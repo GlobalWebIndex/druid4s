@@ -1,0 +1,19 @@
+### Intellij IDEA ###
+
+## File-based project format
+*.ipr
+*.iws
+
+## Directory-based project format
+.idea/
+/*.iml
+out/
+
+### SBT ###
+
+target/
+lib_managed/
+src_managed/
+project/boot/
+.history
+.cache
