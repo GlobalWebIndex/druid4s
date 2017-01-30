@@ -1,5 +1,2 @@
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.3")
-addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.9.0")
-addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.4.0")
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
-addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.2.6")
+dependsOn(ProjectRef(uri("https://github.com/l15k4/sbt-common.git#v0.0.1"), "sbt-common"))
+// dependsOn(ProjectRef(uri("file:///home/ubuntu/src/sbt-common"), "sbt-common"))
