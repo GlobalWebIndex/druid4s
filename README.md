@@ -7,7 +7,7 @@
 ```
 or
 ```
-dependsOn(ProjectRef(uri("https://github.com/GlobalWebIndex/druid4s.git#vx.y.x"), "druid4s"))
+dependsOn(ProjectRef(uri("https://github.com/GlobalWebIndex/druid4s.git#vx.y.x"), "client"))
 ```
 
 Druid is mostly accessed by 4 means : 
