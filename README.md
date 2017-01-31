@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/GlobalWebIndex/druid4s.svg?branch=master)](https://travis-ci.org/GlobalWebIndex/druid4s)
 
 ```
-"net.globalwebindex" %% "druid4s" % "x.y.z"
+"net.globalwebindex" %% "druid4s-client" % "x.y.z"
 ```
 or
 ```
-dependsOn(ProjectRef(uri("https://github.com/GlobalWebIndex/druid4s.git#vx.y.x"), "client"))
+dependsOn(ProjectRef(uri("https://github.com/GlobalWebIndex/druid4s.git#vx.y.x"), "druid4s-client"))
 ```
 
 Druid is mostly accessed by 4 means : 
