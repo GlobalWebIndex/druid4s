@@ -89,7 +89,17 @@ case class SegmentMetadataQuery(
              context: Option[Context] = Option.empty
            ) extends Query
 case class SegmentMetadataField(`type`: String, size: Int, cardinality: Option[Int], hasMultipleValues: Option[Boolean], minValue: Option[String], maxValue: Option[String], errorMessage: Option[String])
-case class SegmentMetadataResponse(id: String, intervals: List[String], columns: Map[String, SegmentMetadataField], size: Int, aggregators: Option[Map[String, Aggregation]], numRows: Option[Int], queryGranularity: Option[String]) extends Response
+case class SegmentMetadataResponse(
+              id: String,
+              intervals: List[String],
+              columns: Map[String, SegmentMetadataField],
+              size: Int,
+              aggregators: Option[Map[String, Aggregation]],
+              numRows: Option[Int],
+              queryGranularity: Option[String],
+              timestampSpec: Option[TimestampSpec],
+              rollup: Option[Boolean]
+            ) extends Response
 
 /** D.A.T.A  S.O.U.R.C.E  M.E.T.A.D.A.T.A   Q.U.E.R.Y **/
 
@@ -199,7 +209,7 @@ case class SelectQuery(
         context: Option[Context] = Option.empty
     ) extends Query
 case class SelectEvent(segmentId: String, offset: Int, event: Map[String, Any])
-case class SelectResult(pagingIdentifiers: Map[String, Int], events: IndexedSeq[SelectEvent])
+case class SelectResult(pagingIdentifiers: Map[String, Int], events: IndexedSeq[SelectEvent], dimensions: List[String], metrics: List[String])
 case class SelectResponse(timestamp: String, result: SelectResult) extends Response
 
 object Query {
