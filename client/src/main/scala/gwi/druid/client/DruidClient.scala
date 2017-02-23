@@ -70,7 +70,7 @@ object DruidClient extends DruidClient {
           acc
         case (acc, task) =>
           logger.info(s"Posting ${acc.length + 1}. task from ${tasks.length}")
-          acc :+ postTask(task)
+          acc += postTask(task)
       }.toList
     }
 
