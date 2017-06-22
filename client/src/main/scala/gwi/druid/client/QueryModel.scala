@@ -88,14 +88,14 @@ case class SegmentMetadataQuery(
              merge: Option[Boolean] = Option.empty,
              context: Option[Context] = Option.empty
            ) extends Query
-case class SegmentMetadataField(`type`: String, size: Int, cardinality: Option[Int], hasMultipleValues: Option[Boolean], minValue: Option[String], maxValue: Option[String], errorMessage: Option[String])
+case class SegmentMetadataField(`type`: String, size: Long, cardinality: Option[Int], hasMultipleValues: Option[Boolean], minValue: Option[String], maxValue: Option[String], errorMessage: Option[String])
 case class SegmentMetadataResponse(
               id: String,
               intervals: List[String],
               columns: Map[String, SegmentMetadataField],
-              size: Int,
+              size: Long,
               aggregators: Option[Map[String, Aggregation]],
-              numRows: Option[Int],
+              numRows: Option[Long],
               queryGranularity: Option[String],
               timestampSpec: Option[TimestampSpec],
               rollup: Option[Boolean]
