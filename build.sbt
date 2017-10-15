@@ -1,9 +1,9 @@
 
-version in ThisBuild := "0.0.7"
+version in ThisBuild := "0.0.8"
 crossScalaVersions in ThisBuild := Seq("2.12.3", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
 
-lazy val randagenVersion = "0.0.7"
+lazy val randagenVersion = "0.0.8"
 
 lazy val druid4s = (project in file("."))
   .settings(aggregate in update := false)
