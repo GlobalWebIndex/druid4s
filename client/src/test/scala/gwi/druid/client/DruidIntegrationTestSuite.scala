@@ -3,6 +3,7 @@ package gwi.druid.client
 import java.io.File
 import java.nio.file.{Files, Paths}
 
+import gwi.partitioner.Granularity
 import gwi.randagen._
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.ScalaFutures

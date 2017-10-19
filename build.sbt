@@ -1,9 +1,10 @@
 
-version in ThisBuild := "0.0.9"
+version in ThisBuild := "0.1.0"
 crossScalaVersions in ThisBuild := Seq("2.12.3", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
 
 lazy val randagenVersion = "0.0.9"
+lazy val storagePartitionerVersion = "0.1.5"
 
 lazy val druid4s = (project in file("."))
   .settings(aggregate in update := false)
@@ -15,6 +16,7 @@ lazy val `druid4s-client` = (project in file("client"))
   .settings(libraryDependencies ++=
     Seq(
       "net.globalwebindex" %% "randagen-core" % randagenVersion % "test",
+      "net.globalwebindex" %% "storage-partitioner-api" % storagePartitionerVersion % "test",
       scalaHttp,
       loggingImplLog4j % "test",
       scalatest

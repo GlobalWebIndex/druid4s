@@ -1,5 +1,6 @@
 package gwi.druid.client
 
+import gwi.partitioner.Granularity
 import gwi.randagen.SampleEventDefFactory
 
 import scala.util.{Failure, Success, Try}

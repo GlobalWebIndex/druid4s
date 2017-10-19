@@ -5,6 +5,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.text.{DecimalFormat, DecimalFormatSymbols}
 import java.time.temporal.ChronoUnit
 
+import gwi.partitioner.Granularity
 import gwi.randagen._
 import org.joda.time.{DateTime, DateTimeZone}
 
@@ -52,7 +53,6 @@ object IndexingBenchmark extends App with DruidBootstrap {
 
   private def runBench(name: String, sizes: List[Int], e: SampleEventDefFactory) = {
     def start(size: Int): IndexingBenchResult = {
-      import Granularity._
       import Samples._
 
       import scala.concurrent.ExecutionContext.Implicits.global
@@ -66,9 +66,9 @@ object IndexingBenchmark extends App with DruidBootstrap {
             println("Sample data generated...")
             val from = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeZone.UTC)
             val to = from.plus(size)
-            val segmentGrn = HOUR
+            val segmentGrn = Granularity.HOUR
             val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
-            val tasks = intervals.map( interval => hadoopTask(segmentGrn, List(interval), HOUR, HOUR, "yyyy/MM/dd/HH", dataDir.toAbsolutePath.toString) )
+            val tasks = intervals.map( interval => hadoopTask(segmentGrn, List(interval), Granularity.HOUR, Granularity.HOUR, "yyyy/MM/dd/HH", dataDir.toAbsolutePath.toString) )
             val start = System.currentTimeMillis()
             val results = Await.result(overlordClient.postTasksConcurrently(1, tasks.toIndexedSeq)(), 20.hours)
             val took = System.currentTimeMillis() - start
