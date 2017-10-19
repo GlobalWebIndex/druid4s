@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.text.{DecimalFormat, DecimalFormatSymbols}
 import java.time.temporal.ChronoUnit
 
-import gwi.partitioner.Granularity
+import gwi.druid.utils.Granularity
 import gwi.randagen._
 import org.joda.time.{DateTime, DateTimeZone}
 
