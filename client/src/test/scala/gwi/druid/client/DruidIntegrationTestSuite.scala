@@ -1,8 +1,6 @@
 package gwi.druid.client
 
-import java.io.File
-import java.nio.file.{Files, Paths}
-
+import com.typesafe.scalalogging.LazyLogging
 import gwi.druid.utils.Granularity
 import gwi.randagen._
 import org.joda.time.{DateTime, DateTimeZone}
@@ -12,51 +10,50 @@ import org.scalatest.{BeforeAndAfterAll, FreeSpec, Matchers}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers with BeforeAndAfterAll with DruidBootstrap {
+class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers with BeforeAndAfterAll with LazyLogging {
   import SampleEventDefFactory._
   import Samples._
 
-  lazy private val sampleSize = 10800
-  lazy private val targetDirPath = Paths.get("/tmp/druid4s-test")
+  val nginxUser = sys.env("DRUID_NGINX_USER")
+  val nginxPswd = sys.env("DRUID_NGINX_PSWD")
+
+  lazy private val realSampleSize = 10800
+  lazy private val sampleSize = 10799
 
   lazy private val from = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-  lazy private val to = from.plusSeconds(sampleSize)
+  lazy private val to = new DateTime(2015, 1, 1, 3, 0, 0, DateTimeZone.UTC)
 
   lazy private val segmentGrn = Granularity.HOUR
   lazy private val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
 
-  lazy private val brokerClient = DruidClient.forQueryingBroker("localhost")(10.seconds, 1.minute)
-  lazy private val overlordClient = DruidClient.forIndexing("localhost")(1.seconds, 5.seconds, 60.seconds)
+  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$nginxUser:$nginxPswd@broker.gwiq-druid-quickstart-t.gwidx.net", 80)(5.seconds, 1.minute)
+  lazy private val overlordClient = DruidClient.forIndexing(s"$nginxUser:$nginxPswd@overlord.gwiq-druid-quickstart-t.gwidx.net", 80)(5.seconds, 5.seconds, 1.minute)
 
-  private def deleteDir(dir: File): Unit = {
-    if (dir.exists()) {
-      dir.listFiles.foreach { f =>
-        if (f.isDirectory)
-          deleteDir(f)
-        else
-          f.delete
-      }
-      Files.delete(dir.toPath)
-    }
-  }
-
-  override def beforeAll() = {
-    deleteDir(targetDirPath.toFile)
-    targetDirPath.toFile.mkdirs()
-    startDruidContainer()
+  def indexTestData: Unit = {
     logger.info(s"Data generation initialized ...")
-    Await.ready(RanDaGen.run(50 * 1024 * 100, sampleSize, Parallelism(4), JsonEventGenerator, FsEventConsumer(targetDirPath, compress = true), SampleEventDefFactory()), 3.seconds)
-    Thread.sleep(25000)
-    val hadoopTask = Samples.hadoopTask(segmentGrn, intervals, Granularity.HOUR, Granularity.HOUR, "yyyy/MM/dd/HH", targetDirPath.toAbsolutePath.toString)
+    val targetDirPath = "druid4s-test/gwiq"
+    val sourceDataBucket = "gwiq-views-t"
+    Await.ready(RanDaGen.run(50 * 1024 * 100, realSampleSize, Parallelism(4), JsonEventGenerator, EventConsumer("s3", s"$sourceDataBucket@$targetDirPath", compress = true), SampleEventDefFactory()), 3.seconds)
+    val hadoopTask =
+      Samples.hadoopTask(
+        segmentGrn,
+        intervals,
+        Granularity.HOUR,
+        Granularity.HOUR,
+        "yyyy/MM/dd/HH",
+        s"s3n://${sys.env("HADOOP_AWS_ACCESS_KEY_ID")}:${sys.env("HADOOP_AWS_SECRET_ACCESS_KEY")}@$sourceDataBucket/$targetDirPath"
+      )
     val result = overlordClient.postTask(hadoopTask).get
     logger.info(s"Indexing finished : ${result.status.status}")
-    Thread.sleep(8000) // data becomes queryable after a few seconds, it's driven by segments poll duration
+    Thread.sleep(6000) // data becomes queryable after a few seconds, it's driven by segments poll duration
     if (result.status.status != TaskStatus.SUCCESS)
       logger.error(s"Indexing failed !!! ${result.errors.mkString("\n", "\n", "\n")}")
     assertResult(TaskStatus.SUCCESS)(result.status.status)
   }
 
-  override def afterAll() = stopDruidContainer()
+/*
+  override def beforeAll() = indexTestData
+*/
 
   "select" in {
     val response = brokerClient.postQuery(rawSelect(intervals), pretty = true).get.get
@@ -74,7 +71,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   "count" in {
     val response = brokerClient.postQuery(countTimeSeries(intervals), pretty = true).get.get
     assert(response.timestamp.nonEmpty)
-    assertResult(sampleSize)(response.result(countAggName))
+    assertResult(realSampleSize)(response.result(countAggName))
   }
 
   "hll" in {
@@ -87,7 +84,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   "sum" in {
     val response = brokerClient.postQuery(sumTimeSeries(intervals), pretty = true).get.get
     assert(response.timestamp.nonEmpty)
-    assertResult((0 until sampleSize).sum)(response.result(idxSumAggName))
+    assertResult((0 until realSampleSize).sum)(response.result(idxSumAggName))
   }
 
   "groupBy" in {
