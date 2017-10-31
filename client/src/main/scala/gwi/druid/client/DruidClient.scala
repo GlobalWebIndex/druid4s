@@ -227,7 +227,7 @@ object DruidClient extends DruidClient {
   }
 
   case class IntervalMetadata(size: Int, count: Int)
-  case class LoadSpec(`type`: String, bucket: String, key: String)
+  case class LoadSpec(`type`: String, bucket: String, key: String, S3Schema: Option[String] = None)
   case class ShardSpec(`type`: String)
   case class Segment(dataSource: String, interval: String, loadSpec: LoadSpec, dimensions: String, metrics: String, shardSpec: ShardSpec, version: String, binaryVersion: Int, size: Int, identifier: String)
 
