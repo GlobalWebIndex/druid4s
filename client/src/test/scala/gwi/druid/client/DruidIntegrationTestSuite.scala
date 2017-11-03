@@ -26,8 +26,8 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   lazy private val segmentGrn = Granularity.HOUR
   lazy private val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
 
-  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$nginxUser:$nginxPswd@broker.gwiq-druid-quickstart-t.gwidx.net", 80)(5.seconds, 1.minute)
-  lazy private val overlordClient = DruidClient.forIndexing(s"$nginxUser:$nginxPswd@overlord.gwiq-druid-quickstart-t.gwidx.net", 80)(5.seconds, 5.seconds, 1.minute)
+  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$nginxUser:$nginxPswd@broker.gwiq-druid-quickstart-s.gwidx.net", 80)(5.seconds, 1.minute)
+  lazy private val overlordClient = DruidClient.forIndexing(s"$nginxUser:$nginxPswd@overlord.gwiq-druid-quickstart-s.gwidx.net", 80)(5.seconds, 5.seconds, 1.minute)
 
   def indexTestData: Unit = {
     logger.info(s"Data generation initialized ...")
