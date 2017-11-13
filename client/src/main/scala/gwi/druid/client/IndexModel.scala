@@ -1,5 +1,7 @@
 package gwi.druid.client
 
+import gwi.druid.client.DruidClient.Segment
+
 case class TimestampSpec(column: String, format: Option[String] = Option.empty)
 case class DimensionsSpec(dimensions: List[String], dimensionExclusions: List[String], spatialDimensions: List[String])
 
@@ -86,7 +88,7 @@ sealed trait IoConfig {
 case class HadoopIoConfig(`type`: String, inputSpec: InputSpec) extends IoConfig
 case class IndexIoConfig(`type`: String, firehose: Firehose) extends IoConfig
 object IoConfig {
-  def hadoop(inputSpec: InputSpec): HadoopIoConfig = HadoopIoConfig("hadoop", inputSpec)
+  def hadoop[S <: InputSpec](inputSpec: S): HadoopIoConfig = HadoopIoConfig("hadoop", inputSpec)
   def index(firehose: Firehose): IndexIoConfig = IndexIoConfig("index", firehose)
 }
 
@@ -134,9 +136,8 @@ case class IngestionSpec(dataSchema: DataSchema, ioConfig: IoConfig, tuningConfi
 case class IngestionUpdateSpec(
         dataSource: String,
         intervals: List[String],
-        segments: Option[List[String]] = Option.empty,
-        granularity: Option[String] = Option.empty,
-        filter: Option[String] = Option.empty,
+        segments: Option[List[Segment]] = Option.empty,
+        filter: Option[Filter] = Option.empty,
         dimensions: Option[List[String]] = Option.empty,
         metrics: Option[List[String]] = Option.empty,
         ignoreWhenNoSegments: Option[Boolean] = Option.empty
