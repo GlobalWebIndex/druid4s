@@ -10,24 +10,29 @@ sealed trait ParseSpec {
   def timestampSpec: TimestampSpec
   def dimensionsSpec: DimensionsSpec
 }
-case class DsvParseSpec(
+case class TimeAndDimsParseSpec(format: String, timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec) extends ParseSpec
+case class DelimitedParseSpec(
          format: String,
          timestampSpec: TimestampSpec,
          dimensionsSpec: DimensionsSpec,
          columns: List[String],
-         delimiter: Option[String] = Option.empty,
+         delimiter: String,
+         hasHeaderRow: Boolean,
+         skipHeaderRows: Int,
          listDelimiter: Option[String] = Option.empty
       ) extends ParseSpec
 case class JsonParseSpec(format: String, timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec) extends ParseSpec
 object ParseSpec {
+  def timeAndDims(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec): TimeAndDimsParseSpec =
+    TimeAndDimsParseSpec("timeAndDims", timestampSpec, dimensionsSpec)
   def json(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec): JsonParseSpec =
     JsonParseSpec("json", timestampSpec, dimensionsSpec)
   def jsonLowerCase(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec): JsonParseSpec =
     JsonParseSpec("jsonLowercase", timestampSpec, dimensionsSpec)
-  def csv(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec, columns: List[String], listDelimiter: Option[String] = Option.empty): JsonParseSpec =
-    JsonParseSpec("csv", timestampSpec, dimensionsSpec)
-  def tsv(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec, columns: List[String], listDelimiter: Option[String] = Option.empty, delimiter: Option[String] = Option.empty): JsonParseSpec =
-    JsonParseSpec("tsv", timestampSpec, dimensionsSpec)
+  def csv(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec, columns: List[String], hasHeaderRow: Boolean, skipHeaderRows: Int, listDelimiter: Option[String] = Option.empty): DelimitedParseSpec =
+    DelimitedParseSpec("csv", timestampSpec, dimensionsSpec, columns, ",", hasHeaderRow, skipHeaderRows, listDelimiter)
+  def tsv(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec, columns: List[String], hasHeaderRow: Boolean, skipHeaderRows: Int, listDelimiter: Option[String] = Option.empty): DelimitedParseSpec =
+    DelimitedParseSpec("tsv", timestampSpec, dimensionsSpec, columns, "\t", hasHeaderRow, skipHeaderRows, listDelimiter)
 }
 
 sealed trait Parser {
