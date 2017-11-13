@@ -29,7 +29,7 @@ object Samples {
             )
           ),
           List(Aggregation.count(countAggName), Aggregation.hll(uuidHllAggName, uuidFieldName), Aggregation.longSum(idxSumAggName, idxFieldName), Aggregation.doubleSum(priceSumAggName, priceFieldName)),
-          GranularitySpec.uniform(segmentIntervals, Some(segmentGrn.toString), Some(queryGrn.toString))
+          GranularitySpec.uniform(segmentIntervals, rollup = true, Some(segmentGrn.toString), Some(queryGrn.toString))
         ),
         IoConfig.hadoop(InputSpec.granularity(dataGrn.toString, inputPath, ".*json\\.gz", Some(pathFormat))),
         Some(

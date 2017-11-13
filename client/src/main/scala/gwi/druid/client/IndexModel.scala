@@ -48,17 +48,22 @@ object Parser {
   def protobuf(parseSpec: ParseSpec): ProtobufParser = ProtobufParser("protobuf", parseSpec)
 }
 
-case class GranularitySpec(
-        `type`: String,
-         segmentGranularity: Option[String] = Option.empty,
-         queryGranularity: Option[String] = Option.empty,
-         intervals: List[String]
-      )
+
+sealed trait GranularitySpec {
+  def `type`: String
+  def queryGranularity: Option[String]
+  def intervals: List[String]
+  def rollup: Boolean
+}
+
+case class ArbitraryGranularitySpec(`type`: String, intervals: List[String], rollup: Boolean = true, queryGranularity: Option[String] = Option.empty) extends GranularitySpec
+case class UniformGranularitySpec(`type`: String, intervals: List[String], rollup: Boolean = true, segmentGranularity: Option[String] = Option.empty, queryGranularity: Option[String] = Option.empty) extends GranularitySpec
+
 object GranularitySpec {
-  def uniform(intervals: List[String], segmentGranularity: Option[String] = Option.empty, queryGranularity: Option[String] = Option.empty): GranularitySpec =
-    GranularitySpec("uniform", segmentGranularity, queryGranularity, intervals)
-  def arbitrary(`type`: String, intervals: List[String], queryGranularity: Option[String] = Option.empty): GranularitySpec =
-    GranularitySpec(`type`, queryGranularity = queryGranularity, intervals = intervals)
+  def uniform(intervals: List[String], rollup: Boolean = true, segmentGranularity: Option[String] = Option.empty, queryGranularity: Option[String] = Option.empty): GranularitySpec =
+    UniformGranularitySpec("uniform", intervals, rollup, segmentGranularity, queryGranularity)
+  def arbitrary(intervals: List[String], rollup: Boolean = true, queryGranularity: Option[String] = Option.empty): GranularitySpec =
+    ArbitraryGranularitySpec("arbitrary", intervals, rollup, queryGranularity)
 }
 
 case class DataSchema(
