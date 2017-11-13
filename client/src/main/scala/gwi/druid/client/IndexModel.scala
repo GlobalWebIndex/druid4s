@@ -39,10 +39,12 @@ sealed trait Parser {
   def `type`: String
   def parseSpec: ParseSpec
 }
+case class NoopParser(`type`: String, parseSpec: ParseSpec) extends Parser
 case class StringParser(`type`: String, parseSpec: ParseSpec) extends Parser
 case class HadoopyStringParser(`type`: String, parseSpec: ParseSpec) extends Parser
 case class ProtobufParser(`type`: String, parseSpec: ParseSpec) extends Parser
 object Parser {
+  def noop(parseSpec: ParseSpec): NoopParser = NoopParser("noop", parseSpec)
   def string(parseSpec: ParseSpec): StringParser = StringParser("string", parseSpec)
   def hadoopyString(parseSpec: ParseSpec): HadoopyStringParser = HadoopyStringParser("hadoopyString", parseSpec)
   def protobuf(parseSpec: ParseSpec): ProtobufParser = ProtobufParser("protobuf", parseSpec)

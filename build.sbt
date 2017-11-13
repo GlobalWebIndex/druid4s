@@ -1,5 +1,5 @@
 
-version in ThisBuild := "0.1.7"
+version in ThisBuild := "0.1.8"
 crossScalaVersions in ThisBuild := Seq("2.12.3", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
 
