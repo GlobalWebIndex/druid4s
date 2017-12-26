@@ -5,9 +5,9 @@ services:
   - docker
 language: scala
 scala:
-  - 2.12.1
+  - 2.12.4
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 cache:
   directories:
     - $HOME/.m2/repository
@@ -21,8 +21,8 @@ notifications:
     recipients:
       - liska.jakub@gmail.com
 before_install:
-  - docker pull gwiq/imply-base:1.3.1
+  - docker pull gwiq/imply-base:2.3.6
 before_script:
-  - rm -rf ${HOME}/.sbt/0.13/staging
+  - rm -rf ${HOME}/.sbt/1.0/staging
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean test
