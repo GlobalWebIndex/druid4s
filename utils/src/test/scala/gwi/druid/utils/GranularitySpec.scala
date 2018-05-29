@@ -36,6 +36,7 @@ class GranularitySpec extends FreeSpec with Matchers {
     assertResult(new DateTime("2011-03-01T00:00:00.000"))(MONTH.truncate(date))
     assertResult(new DateTime("2011-03-14T00:00:00.000"))(WEEK.truncate(date))
     assertResult(new DateTime("2011-03-15T00:00:00.000"))(DAY.truncate(date))
+    assertResult(new DateTime("2011-03-15T00:00:00.000"))(DAY.truncate(new DateTime("2011-03-15T09:39:11.545")))
     assertResult(new DateTime("2011-03-15T22:00:00.000"))(HOUR.truncate(date))
     assertResult(new DateTime("2011-03-15T22:42:00.000"))(MINUTE.truncate(date))
     assertResult(new DateTime("2011-03-15T22:42:23.000"))(SECOND.truncate(date))
