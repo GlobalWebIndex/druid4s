@@ -106,8 +106,7 @@ object Granularity {
     def getUnits(n: Int): Months = Months.months(n)
     def numIn(interval: ReadableInterval): Int = Months.monthsIn(interval).getMonths
     def truncate(time: DateTime): DateTime = {
-      val mutableDateTime = time.toMutableDateTime(ISOChronology.getInstanceUTC)
-      mutableDateTime.setMillisOfDay(0)
+      val mutableDateTime = DAY.truncate(time).toMutableDateTime(ISOChronology.getInstanceUTC)
       mutableDateTime.setDayOfMonth(1)
       mutableDateTime.toDateTime(ISOChronology.getInstanceUTC)
     }
@@ -118,8 +117,7 @@ object Granularity {
     def getUnits(n: Int): Weeks = Weeks.weeks(n)
     def numIn(interval: ReadableInterval): Int = Weeks.weeksIn(interval).getWeeks
     def truncate(time: DateTime): DateTime = {
-      val mutableDateTime = time.toMutableDateTime(ISOChronology.getInstanceUTC)
-      mutableDateTime.setMillisOfDay(0)
+      val mutableDateTime = DAY.truncate(time).toMutableDateTime(ISOChronology.getInstanceUTC)
       mutableDateTime.setDayOfWeek(1)
       mutableDateTime.toDateTime(ISOChronology.getInstanceUTC)
     }
@@ -130,7 +128,7 @@ object Granularity {
     def getUnits(n: Int): Days = Days.days(n)
     def numIn(interval: ReadableInterval): Int = Days.daysIn(interval).getDays
     def truncate(time: DateTime): DateTime = {
-      val mutableDateTime = time.toMutableDateTime(ISOChronology.getInstanceUTC)
+      val mutableDateTime = HOUR.truncate(time).toMutableDateTime(ISOChronology.getInstanceUTC)
       mutableDateTime.setMillisOfDay(0)
       mutableDateTime.toDateTime(ISOChronology.getInstanceUTC)
     }
@@ -141,9 +139,7 @@ object Granularity {
     def getUnits(n: Int): Hours = Hours.hours(n)
     def numIn(interval: ReadableInterval): Int = Hours.hoursIn(interval).getHours
     def truncate(time: DateTime): DateTime = {
-      val mutableDateTime = time.toMutableDateTime(ISOChronology.getInstanceUTC)
-      mutableDateTime.setMillisOfSecond(0)
-      mutableDateTime.setSecondOfMinute(0)
+      val mutableDateTime = MINUTE.truncate(time).toMutableDateTime(ISOChronology.getInstanceUTC)
       mutableDateTime.setMinuteOfHour(0)
       mutableDateTime.toDateTime(ISOChronology.getInstanceUTC)
     }
@@ -154,8 +150,7 @@ object Granularity {
     def getUnits(count: Int): Minutes = Minutes.minutes(count)
     def numIn(interval: ReadableInterval): Int = Minutes.minutesIn(interval).getMinutes
     def truncate(time: DateTime): DateTime = {
-      val mutableDateTime = time.toMutableDateTime(ISOChronology.getInstanceUTC)
-      mutableDateTime.setMillisOfSecond(0)
+      val mutableDateTime = SECOND.truncate(time).toMutableDateTime(ISOChronology.getInstanceUTC)
       mutableDateTime.setSecondOfMinute(0)
       mutableDateTime.toDateTime(ISOChronology.getInstanceUTC)
     }
