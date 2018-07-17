@@ -135,10 +135,15 @@ object DruidClient extends DruidClient {
     def getTaskLog(taskId: String): Try[String] =
       HttpClient.request(s"$url/$taskId/log", 5)(requestWithTimeouts)
 
-    def getTaskStatus(taskId: String): Try[TaskStatus] = {
+    def getTaskStatus(taskId: String): Try[TaskStatus] =
       HttpClient.request(s"$url/$taskId/status", 5)(requestWithTimeouts)
-        .map(ObjMapper.readValue[IndexTaskStatusResponse](_).status)
-    }
+        .flatMap { responseJson =>
+          Try(ObjMapper.readValue[IndexTaskStatusResponse](responseJson).status)
+            .recoverWith { case ex: Throwable =>
+              logger.error(s"Unable to parse status response json:\n$responseJson", ex)
+              Failure(ex)
+            }
+        }
 
     def postTask(task: IndexTask, extraConnAttempts: Int = 0, extraAttempts: Int = 0, recoveryConnSleep: Int = 10000, recoverySleep: Int = 10000): Try[IndexingTaskResult] = {
       val start = System.currentTimeMillis()
@@ -149,7 +154,13 @@ object DruidClient extends DruidClient {
           .postData(jsonTask)
           .header("content-type", "application/json")
       }.flatMap { responseJson =>
-        val taskId = ObjMapper.readValue[IndexTaskResponse](responseJson).task
+        logger.info(s"Parsing response:\n$responseJson")
+        Try(ObjMapper.readValue[IndexTaskResponse](responseJson).task)
+          .recoverWith { case ex: Throwable =>
+            logger.error(s"Unable to parse indexing response json:\n$responseJson", ex)
+            Failure(ex)
+          }
+      }.flatMap { taskId =>
         val successStatusCode = TaskStatus.SUCCESS
         val failedStatusCode = TaskStatus.FAILED
         val deadLine = System.currentTimeMillis() + indexingTimeout.toMillis
@@ -158,15 +169,19 @@ object DruidClient extends DruidClient {
           Thread.sleep(3000)
           getTaskStatus(taskId) match {
             case Failure(ex) =>
+              logger.error("Indexing failed ...", ex)
               Failure(ex)
             case Success(s) if s.status == successStatusCode =>
               val status = s.copy(duration = (System.currentTimeMillis() - start).toInt)
               Success(IndexingTaskResult(status, List.empty))
             case Success(s) if s.status == failedStatusCode && extraAttempts > 0 =>
+              logger.error(s"Indexing finished with failed status code $failedStatusCode ... repeating ...")
               Thread.sleep(recoverySleep)
               postTask(task, extraAttempts-1)
             case Success(s) if s.status == failedStatusCode =>
+              logger.error(s"Indexing finished with failed status code $failedStatusCode ...")
               getTaskLog(taskId).map(_.split("\n")).map { logLines =>
+                logger.error(s"Indexing failed due to:${logLines.mkString("\n","\n","\n")}")
                 val errorIdx = logLines.indexWhere(_.contains("ERROR"))
                 val errorLines = if (errorIdx != -1) logLines.slice(errorIdx, errorIdx + 200).toList else List.empty
                 IndexingTaskResult(s.copy(duration = (System.currentTimeMillis() - start).toInt), errorLines)
