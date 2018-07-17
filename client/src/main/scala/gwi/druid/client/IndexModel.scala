@@ -162,7 +162,7 @@ object IndexTask {
 }
 
 case class IndexTaskResponse(task: String)
-case class TaskStatus(id: String, status: String, duration: Int)
+case class TaskStatus(id: String, status: String, duration: Int, errorMsg: Option[String] = Option.empty)
 object TaskStatus {
   val SUCCESS = "SUCCESS"
   val FAILED = "FAILED"
