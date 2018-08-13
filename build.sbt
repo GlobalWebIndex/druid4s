@@ -1,9 +1,9 @@
 
-version in ThisBuild := "0.2.8"
+version in ThisBuild := "0.2.9"
 crossScalaVersions in ThisBuild := Seq("2.12.4", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
 
-lazy val randagenVersion = "0.1.4"
+lazy val randagenVersion = "0.1.5"
 
 lazy val druid4s = (project in file("."))
   .settings(aggregate in update := false)
@@ -21,7 +21,7 @@ lazy val `Druid4s-client` = (project in file("client"))
     Seq(
       "net.globalwebindex" %% "randagen-core" % randagenVersion % "test",
       scalaHttp,
-      loggingImplLog4j % "test",
+      loggingImplLogback % "test",
       scalatest
     ) ++ loggingApi ++ jackson
   ).settings(publishSettings("GlobalWebIndex", "druid4s-client", s3Resolver))
