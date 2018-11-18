@@ -1,28 +1,30 @@
+import Dependencies._
+import Deploy._
 
-version in ThisBuild := "0.3.2"
+lazy val s3Resolver = "S3 Snapshots" at "s3://public.maven.globalwebindex.net.s3-eu-west-1.amazonaws.com/snapshots"
+
 crossScalaVersions in ThisBuild := Seq("2.12.6", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
-
-lazy val randagenVersion = "0.1.6"
-
-lazy val druid4s = (project in file("."))
-  .settings(aggregate in update := false)
-  .settings(publish := {})
-  .aggregate(`Druid4s-client`, `Druid4s-utils`)
+libraryDependencies in ThisBuild ++= loggingApi
+resolvers in ThisBuild ++= Seq(
+  "Maven Central Google Mirror EU" at "https://maven-central-eu.storage-download.googleapis.com/repos/central/data/",
+  s3Resolver
+)
+version in ThisBuild ~= (_.replace('+', '-'))
+dynver in ThisBuild ~= (_.replace('+', '-'))
+cancelable in ThisBuild := true
 
 lazy val `Druid4s-utils` = (project in file("utils"))
-  .enablePlugins(CommonPlugin)
   .settings(libraryDependencies ++= jodaTime ++ Seq(scalatest))
   .settings(publishSettings("GlobalWebIndex", "druid4s-utils", s3Resolver))
 
 lazy val `Druid4s-client` = (project in file("client"))
-  .enablePlugins(CommonPlugin)
   .settings(libraryDependencies ++=
     Seq(
-      "net.globalwebindex" %% "randagen-core" % randagenVersion % "test",
+      randagen,
       scalaHttp,
       loggingImplLogback % "test",
       scalatest
-    ) ++ loggingApi ++ jackson
+    ) ++ jackson
   ).settings(publishSettings("GlobalWebIndex", "druid4s-client", s3Resolver))
     .dependsOn(`Druid4s-utils` % "compile->compile;test->test")

@@ -1,6 +1,6 @@
 ## druid4s
 
-[![Build Status](https://travis-ci.org/GlobalWebIndex/druid4s.svg?branch=master)](https://travis-ci.org/GlobalWebIndex/druid4s)
+[![DroneCI](https://drone.globalwebindex.net/api/badges/GlobalWebIndex/druid4s/status.svg)](https://drone.globalwebindex.net/GlobalWebIndex/druid4s)
 
 ```
 "net.globalwebindex" %% "druid4s-client" % "x.y.z"
