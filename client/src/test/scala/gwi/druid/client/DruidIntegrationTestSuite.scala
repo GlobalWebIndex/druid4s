@@ -5,11 +5,12 @@ import gwi.druid.utils.Granularity
 import gwi.randagen._
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, FreeSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FreeSpec, Ignore, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
+@Ignore // TODO change to druid on k8s
 class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers with BeforeAndAfterAll with LazyLogging {
   import SampleEventDefFactory._
   import Samples._

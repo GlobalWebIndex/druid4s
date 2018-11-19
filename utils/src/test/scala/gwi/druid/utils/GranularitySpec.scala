@@ -1,5 +1,7 @@
 package gwi.druid.utils
 
+import java.util.TimeZone
+
 import org.joda.time._
 import org.scalatest.{FreeSpec, Matchers}
 
@@ -120,4 +122,10 @@ class GranularitySpec extends FreeSpec with Matchers {
     def getSeconds: Int = Seconds.secondsIn(interval).getSeconds
   }
 
+}
+
+object GranularitySpec {
+  System.setProperty("user.timezone", "UTC")
+  TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+  DateTimeZone.setDefault(DateTimeZone.UTC)
 }
