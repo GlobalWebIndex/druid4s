@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   val akkaVersion       = "2.5.16"
-  val randagenVersion   = "0.1.9"
+  val randagenVersion   = "0.2.2"
   val jacksonVersion    = "2.9.2"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"

@@ -13,7 +13,7 @@ resolvers in ThisBuild ++= Seq(
 version in ThisBuild ~= (_.replace('+', '-'))
 dynver in ThisBuild ~= (_.replace('+', '-'))
 cancelable in ThisBuild := true
-publish := { }
+publishArtifact in ThisBuild := false
 
 lazy val `druid4s-utils` = (project in file("utils"))
   .settings(libraryDependencies ++= jodaTime :+ scalatest)
