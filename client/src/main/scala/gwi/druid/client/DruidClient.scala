@@ -33,8 +33,9 @@ case class IndexingTaskResult(status: TaskStatus, errors: List[String]) {
 object ObjMapper extends ObjectMapper with ScalaObjectMapper {
   setSerializationInclusion(JsonInclude.Include.NON_NULL)
   registerModule(DefaultScalaModule)
-  val prettyWriter = writer(new DefaultPrettyPrinter)
-  val miniWriter = writer(new MinimalPrettyPrinter)
+  val prettyWriter  = writer(new DefaultPrettyPrinter)
+  val miniWriter    = writer(new MinimalPrettyPrinter)
+  val mapReader     = readerFor[Map[String, String]]
 }
 
 sealed trait DruidClient {
