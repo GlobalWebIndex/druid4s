@@ -3,17 +3,17 @@ import sbt._
 object Dependencies {
 
   val akkaVersion       = "2.5.16"
-  val randagenVersion   = "0.2.2"
+  val randagenVersion   = "0.2.4"
   val jacksonVersion    = "2.9.2"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
-  lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                           % "2.4.1"
-  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.0.5"                 % "test"
+  lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                        % "2.4.1"
+  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.0.5"         % "test"
 
   lazy val loggingApi                   = Seq(
-    "org.slf4j"                     %     "slf4j-api"                                 % "1.7.25",
-    "com.typesafe.scala-logging"    %%    "scala-logging"                             % "3.9.0"
+    "org.slf4j"                     %     "slf4j-api"                             % "1.7.25",
+    "com.typesafe.scala-logging"    %%    "scala-logging"                         % "3.9.0"
   )
 
   lazy val jodaTime                     = Seq(

@@ -42,7 +42,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
         Granularity.HOUR,
         Granularity.HOUR,
         "yyyy/MM/dd/HH",
-        s"s3n://${sys.env("HADOOP_AWS_ACCESS_KEY_ID")}:${sys.env("HADOOP_AWS_SECRET_ACCESS_KEY")}@$sourceDataBucket/$targetDirPath"
+        s"s3n://${sys.env("AWS_ACCESS_KEY_ID")}:${sys.env("AWS_SECRET_ACCESS_KEY")}@$sourceDataBucket/$targetDirPath"
       )
     val result = overlordClient.postTask(hadoopTask).get
     logger.info(s"Indexing finished : ${result.status.status}")
