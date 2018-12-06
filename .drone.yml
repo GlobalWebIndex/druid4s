@@ -21,13 +21,7 @@ pipeline:
     image: gwiq/sbt-docker:latest
     commands:
       - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=./.coursier -Dsbt.ivy.home=./.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
-    secrets:
-    - source: aws_access_key_id
-      target: aws_access_key_id
-    - source: aws_secret_access_key
-      target: aws_secret_access_key
-    - source: aws_region
-      target: aws_region
+    secrets: [ aws_access_key_id, aws_secret_access_key, aws_region ]
     when:
       event: push
 
@@ -35,17 +29,7 @@ pipeline:
     image: gwiq/sbt-docker:latest
     commands:
       - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=./.coursier -Dsbt.ivy.home=./.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
-    secrets:
-      - source: bintray_user
-        target: bintray_user
-      - source: bintray_pass
-        target: bintray_pass
-      - source: aws_access_key_id
-        target: aws_access_key_id
-      - source: aws_secret_access_key
-        target: aws_secret_access_key
-      - source: aws_region
-        target: aws_region
+    secrets: [ bintray_user, bintray_pass, aws_access_key_id, aws_secret_access_key, aws_region ]
     when:
       event: [deployment, tag]
 
@@ -59,3 +43,4 @@ pipeline:
       - /tmp/cache:/cache
     when:
       event: [push, deployment, tag]
+      status: [ failure, success ]
