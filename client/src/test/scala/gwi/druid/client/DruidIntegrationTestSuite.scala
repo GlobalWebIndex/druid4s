@@ -14,6 +14,8 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   import SampleEventDefFactory._
   import Samples._
 
+  require(sys.env.get("GOOGLE_APPLICATION_CREDENTIALS").nonEmpty, "Test won't work without GOOGLE_APPLICATION_CREDENTIALS exported !!!")
+
   val brokerHost = sys.env.getOrElse("BROKER_HOST", throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
   val overlordHost = sys.env.getOrElse("OVERLORD_HOST", throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
 
