@@ -39,10 +39,10 @@ object ObjMapper extends ObjectMapper with ScalaObjectMapper {
 }
 
 sealed trait DruidClient {
-  def forIndexing(ip: String, port: Int = 8090)(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration): Overlord
-  def forQueryingBroker(ip: String, port: Int = 8082)(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker
-  def forQueryingCoordinator(ip: String, port: Int = 8081)(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator
-  def forQueryingPlyqlServer(ip: String, port: Int = 8099)(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql
+  def forIndexing(ip: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration): Overlord
+  def forQueryingBroker(ip: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker
+  def forQueryingCoordinator(ip: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator
+  def forQueryingPlyqlServer(ip: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql
 }
 
 object DruidClient extends DruidClient {
@@ -51,17 +51,17 @@ object DruidClient extends DruidClient {
   private def defaultTimeout(connTimeout: FiniteDuration, readTimeout: FiniteDuration)(req: HttpRequest) =
     req.timeout(connTimeout.toMillis.toInt, readTimeout.toMillis.toInt)
 
-  def forIndexing(ip: String, port: Int = 8090)(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration) =
-    Overlord(s"http://$ip:$port/druid/indexer/v1/task", indexingTimeout, defaultTimeout(connTimeout, readTimeout))
+  def forIndexing(ip: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration) =
+    Overlord(s"$protocol://$ip:$port/druid/indexer/v1/task", indexingTimeout, defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingBroker(ip: String, port: Int = 8082)(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
-    Broker(s"http://$ip:$port/druid/v2", defaultTimeout(connTimeout, readTimeout))
+  def forQueryingBroker(ip: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+    Broker(s"$protocol://$ip:$port/druid/v2", defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingCoordinator(ip: String, port: Int = 8081)(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
-    Coordinator(s"http://$ip:$port/druid/coordinator/v1", defaultTimeout(connTimeout, readTimeout))
+  def forQueryingCoordinator(ip: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+    Coordinator(s"$protocol://$ip:$port/druid/coordinator/v1", defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingPlyqlServer(ip: String, port: Int = 8099)(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
-    Plyql(s"http://$ip:$port/plyql", defaultTimeout(connTimeout, readTimeout))
+  def forQueryingPlyqlServer(ip: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+    Plyql(s"$protocol://$ip:$port/plyql", defaultTimeout(connTimeout, readTimeout))
 
   case class Overlord private[DruidClient](url: String, indexingTimeout: FiniteDuration, requestWithTimeouts: HttpRequest => HttpRequest) {
 

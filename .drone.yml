@@ -9,12 +9,12 @@ pipeline:
   run-tests:
     image: gwiq/sbt-docker:latest
     environment:
-      - BROKER_HOST=musty-bear-druid-broker.default.svc.cluster.local
-      - OVERLORD_HOST=musty-bear-druid-overlord.default.svc.cluster.local
+      - BROKER_HOST=broker.qpipe-s.globalwebindex.net
+      - OVERLORD_HOST=overlord.qpipe-s.globalwebindex.net
       - GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
     volumes:
       - /var/lib/docker/sbt:/cache
-    secrets: [ test_credentials ]
+    secrets: [ test_credentials, druid_user, druid_password ]
     commands:
       - echo $TEST_CREDENTIALS | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
       - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test

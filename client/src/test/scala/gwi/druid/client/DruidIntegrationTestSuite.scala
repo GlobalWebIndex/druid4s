@@ -19,6 +19,9 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   val brokerHost = sys.env.getOrElse("BROKER_HOST", throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
   val overlordHost = sys.env.getOrElse("OVERLORD_HOST", throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
 
+  val druidUser = sys.env("DRUID_USER")
+  val druidPassword = sys.env("DRUID_PASSWORD")
+
   lazy private val realSampleSize = 10800
   lazy private val sampleSize = 10799
 
@@ -28,8 +31,8 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   lazy private val segmentGrn = Granularity.HOUR
   lazy private val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
 
-  lazy private val brokerClient = DruidClient.forQueryingBroker(brokerHost)(5.seconds, 1.minute)
-  lazy private val overlordClient = DruidClient.forIndexing(overlordHost)(5.seconds, 5.seconds, 1.minute)
+  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$druidUser:$druidPassword@$brokerHost", protocol = "https")(5.seconds, 1.minute)
+  lazy private val overlordClient = DruidClient.forIndexing(s"$druidUser:$druidPassword@$overlordHost", protocol = "https")(5.seconds, 5.seconds, 1.minute)
 
   def indexTestData(): Unit = {
     logger.info(s"Data generation initialized ...")
