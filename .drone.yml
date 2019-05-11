@@ -13,7 +13,10 @@ pipeline:
       - OVERLORD_HOST=musty-bear-druid-overlord.default.svc.cluster.local
     volumes:
       - /var/lib/docker/sbt:/cache
+    secrets: [ test_credentials ]
     commands:
+      - echo $TEST_CREDENTIALS > ${HOME}/gcloud-service-key.json
+      - export GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcloud-service-key.json
       - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
     when:
       event: push
