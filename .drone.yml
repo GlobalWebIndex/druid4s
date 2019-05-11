@@ -17,7 +17,6 @@ pipeline:
     secrets: [ test_credentials ]
     commands:
       - echo $TEST_CREDENTIALS | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-      - export GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcloud-service-key.json
       - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
     when:
       event: push
