@@ -5,18 +5,17 @@ import gwi.druid.utils.Granularity
 import gwi.randagen._
 import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, FreeSpec, Ignore, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FreeSpec, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-@Ignore // TODO change to druid on k8s
 class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers with BeforeAndAfterAll with LazyLogging {
   import SampleEventDefFactory._
   import Samples._
 
-  val nginxUser = sys.env("DRUID_NGINX_USER")
-  val nginxPswd = sys.env("DRUID_NGINX_PSWD")
+  val brokerHost = sys.env.getOrElse("BROKER_HOST", throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
+  val overlordHost = sys.env.getOrElse("OVERLORD_HOST", throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
 
   lazy private val realSampleSize = 10800
   lazy private val sampleSize = 10799
@@ -27,14 +26,14 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   lazy private val segmentGrn = Granularity.HOUR
   lazy private val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
 
-  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$nginxUser:$nginxPswd@broker.gwiq-druid-quickstart-s.gwidx.net", 80)(5.seconds, 1.minute)
-  lazy private val overlordClient = DruidClient.forIndexing(s"$nginxUser:$nginxPswd@overlord.gwiq-druid-quickstart-s.gwidx.net", 80)(5.seconds, 5.seconds, 1.minute)
+  lazy private val brokerClient = DruidClient.forQueryingBroker(brokerHost)(5.seconds, 1.minute)
+  lazy private val overlordClient = DruidClient.forIndexing(overlordHost)(5.seconds, 5.seconds, 1.minute)
 
-  def indexTestData: Unit = {
+  def indexTestData(): Unit = {
     logger.info(s"Data generation initialized ...")
-    val targetDirPath = "druid4s-test/gwiq"
-    val sourceDataBucket = "gwiq-views-t"
-    Await.ready(RanDaGen.run(50 * 1024 * 100, realSampleSize, Parallelism(4), JsonEventGenerator, EventConsumer("s3", s"$sourceDataBucket@$targetDirPath", compress = true), SampleEventDefFactory()), 3.seconds)
+    val targetDirPath = "druid4s-test"
+    val sourceDataBucket = "gwiq-view-s"
+    Await.ready(RanDaGen.run(50 * 1024 * 100, realSampleSize, Parallelism(4), JsonEventGenerator, EventConsumer("gcs", s"$sourceDataBucket@$targetDirPath", compress = true), SampleEventDefFactory()), 3.seconds)
     val hadoopTask =
       Samples.hadoopTask(
         segmentGrn,
@@ -42,7 +41,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
         Granularity.HOUR,
         Granularity.HOUR,
         "yyyy/MM/dd/HH",
-        s"s3n://${sys.env("AWS_ACCESS_KEY_ID")}:${sys.env("AWS_SECRET_ACCESS_KEY")}@$sourceDataBucket/$targetDirPath"
+        s"gs://$sourceDataBucket/$targetDirPath"
       )
     val result = overlordClient.postTask(hadoopTask).get
     logger.info(s"Indexing finished : ${result.status.status}")
@@ -52,9 +51,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
     assertResult(TaskStatus.SUCCESS)(result.status.status)
   }
 
-/*
-  override def beforeAll() = indexTestData
-*/
+  override def beforeAll(): Unit = indexTestData()
 
   "select" in {
     val response = brokerClient.postQuery(rawSelect(intervals), pretty = true).get.get
