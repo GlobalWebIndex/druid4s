@@ -1,9 +1,16 @@
+import java.util.TimeZone
+
 import Dependencies._
 import Deploy._
 
 crossScalaVersions in ThisBuild := Seq("2.12.6", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
 libraryDependencies in ThisBuild ++= loggingApi
+
+initialize := {
+  System.setProperty("user.timezone", "UTC")
+  TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+}
 
 resolvers in ThisBuild ++= Seq(
   "Maven Central Google Mirror EU" at "https://maven-central-eu.storage-download.googleapis.com/repos/central/data/",
