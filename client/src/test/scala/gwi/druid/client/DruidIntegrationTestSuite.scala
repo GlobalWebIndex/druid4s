@@ -22,8 +22,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   val druidUser = sys.env("DRUID_USER")
   val druidPassword = sys.env("DRUID_PASSWORD")
 
-  lazy private val realSampleSize = 10800
-  lazy private val sampleSize = 10799
+  lazy private val sampleSize = 10800
 
   lazy private val from = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeZone.UTC)
   lazy private val to = new DateTime(2015, 1, 1, 3, 0, 0, DateTimeZone.UTC)
@@ -41,7 +40,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
     logger.info(s"Data generation initialized ...")
     val targetDirPath = "druid4s-test"
     val sourceDataBucket = "gwiq-view-s"
-    Await.ready(RanDaGen.run(50 * 1024 * 100, realSampleSize, Parallelism(4), JsonEventGenerator, EventConsumer("gcs", s"$sourceDataBucket@$targetDirPath", compress = true), SampleEventDefFactory()), 3.seconds)
+    Await.ready(RanDaGen.run(50 * 1024 * 100, 10800, Parallelism(4), JsonEventGenerator, EventConsumer("gcs", s"$sourceDataBucket@$targetDirPath", compress = true), SampleEventDefFactory()), 3.seconds)
     val hadoopTask =
       Samples.hadoopTask(
         segmentGrn,
@@ -53,10 +52,10 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
       )
     val result = overlordClient.postTask(hadoopTask).get
     logger.info(s"Indexing finished : ${result.status.status}")
-    Thread.sleep(6000) // data becomes queryable after a few seconds, it's driven by segments poll duration
     if (result.status.status != TaskStatus.SUCCESS)
       logger.error(s"Indexing failed !!! ${result.errors.mkString("\n", "\n", "\n")}")
     assertResult(TaskStatus.SUCCESS)(result.status.status)
+    Thread.sleep(8000) // data becomes queryable after a while, depending on segments poll duration
   }
 
   override def beforeAll(): Unit = indexTestData()
@@ -77,7 +76,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   "count" in {
     val response = brokerClient.postQuery(countTimeSeries(intervals), pretty = true).get.get
     assert(response.timestamp.nonEmpty)
-    assertResult(realSampleSize)(response.result(countAggName))
+    assertResult(10800)(response.result(countAggName))
   }
 
   "hll" in {
@@ -90,7 +89,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   "sum" in {
     val response = brokerClient.postQuery(sumTimeSeries(intervals), pretty = true).get.get
     assert(response.timestamp.nonEmpty)
-    assertResult((0 until realSampleSize).sum)(response.result(idxSumAggName))
+    assertResult((0 until 10800).sum)(response.result(idxSumAggName))
   }
 
   "groupBy" in {
