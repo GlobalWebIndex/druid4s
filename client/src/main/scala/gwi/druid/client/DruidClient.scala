@@ -133,6 +133,9 @@ object DruidClient extends DruidClient {
       ).map(_.flatten)
     }
 
+    def isHealthy: Try[Boolean] =
+      HttpClient.request(s"$url/status/health", 5)(requestWithTimeouts).map(_ == "true")
+
     def getTaskLog(taskId: String): Try[String] =
       HttpClient.request(s"$url/$taskId/log", 5)(requestWithTimeouts)
 
@@ -212,6 +215,9 @@ object DruidClient extends DruidClient {
   case class Broker private[DruidClient](url: String, requestWithTimeouts: HttpRequest => HttpRequest) {
     import ObjMapper._
 
+    def isHealthy: Try[Boolean] =
+      HttpClient.request(s"$url/status/health", 5)(requestWithTimeouts).map(_ == "true")
+
     /**
       * @return response which is :
       *         - Try in case of possible http and server errors
@@ -249,6 +255,9 @@ object DruidClient extends DruidClient {
 
   case class Coordinator private[DruidClient](url: String, requestWithTimeouts: HttpRequest => HttpRequest) {
     import ObjMapper._
+
+    def isHealthy: Try[Boolean] =
+      HttpClient.request(s"$url/status/health", 5)(requestWithTimeouts).map(_ == "true")
 
     /**
       * @return the current leader coordinator of the cluster.
