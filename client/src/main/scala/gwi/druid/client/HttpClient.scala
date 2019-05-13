@@ -25,7 +25,7 @@ object HttpClient {
         case Success(r) if r.code == 200 =>
           Success(r.body)
         case Success(r) if remainingAttempts > 0 =>
-          logger.error(s"Server unreachable due to ${r.code} ${r.statusLine}, sleeping for 5 seconds and trying again...")
+          logger.error(s"Server unreachable due to ${r.code} ${r.statusLine} at $url, sleeping for 5 seconds and trying again...")
           Thread.sleep(recoverySleep)
           executeRepeatedly(url, remainingAttempts-1, authOpt)
         case Success(r) =>

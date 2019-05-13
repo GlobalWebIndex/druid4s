@@ -32,7 +32,7 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   lazy private val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
 
   lazy private val brokerClient = DruidClient.forQueryingBroker(s"$druidUser:$druidPassword@$brokerHost", port = 443, protocol = "https")(5.seconds, 1.minute)
-  lazy private val overlordClient = DruidClient.forIndexing(s"$druidUser:$druidPassword@$overlordHost", port = 443, protocol = "https")(5.seconds, 5.seconds, 1.minute)
+  lazy private val overlordClient = DruidClient.forIndexing(s"$druidUser:$druidPassword@$overlordHost", port = 443, protocol = "https")(5.seconds, 5.seconds, 3.minute)
 
   require(brokerClient.isHealthy.get, "Broker is not healthy !!!")
   require(overlordClient.isHealthy.get, "Overlord is not healthy !!!")
