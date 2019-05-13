@@ -38,11 +38,16 @@ object ObjMapper extends ObjectMapper with ScalaObjectMapper {
   val mapReader     = readerFor[Map[String, String]]
 }
 
+case class DruidUrl(protocol: String, host: String, port: Int, endpoint: String) {
+  def baseUrl = s"$protocol://$host:$port"
+  def url = s"$baseUrl/$endpoint"
+}
+
 sealed trait DruidClient {
-  def forIndexing(ip: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration): Overlord
-  def forQueryingBroker(ip: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker
-  def forQueryingCoordinator(ip: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator
-  def forQueryingPlyqlServer(ip: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql
+  def forIndexing(host: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration): Overlord
+  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker
+  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator
+  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql
 }
 
 object DruidClient extends DruidClient {
@@ -51,19 +56,19 @@ object DruidClient extends DruidClient {
   private def defaultTimeout(connTimeout: FiniteDuration, readTimeout: FiniteDuration)(req: HttpRequest) =
     req.timeout(connTimeout.toMillis.toInt, readTimeout.toMillis.toInt)
 
-  def forIndexing(ip: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration) =
-    Overlord(s"$protocol://$ip:$port/druid/indexer/v1/task", indexingTimeout, defaultTimeout(connTimeout, readTimeout))
+  def forIndexing(host: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration) =
+    Overlord(DruidUrl(protocol, host, port, "druid/indexer/v1/task"), indexingTimeout, defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingBroker(ip: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
-    Broker(s"$protocol://$ip:$port/druid/v2", defaultTimeout(connTimeout, readTimeout))
+  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+    Broker(DruidUrl(protocol, host, port, "druid/v2"), defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingCoordinator(ip: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
-    Coordinator(s"$protocol://$ip:$port/druid/coordinator/v1", defaultTimeout(connTimeout, readTimeout))
+  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+    Coordinator(DruidUrl(protocol, host, port, "druid/coordinator/v1"), defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingPlyqlServer(ip: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
-    Plyql(s"$protocol://$ip:$port/plyql", defaultTimeout(connTimeout, readTimeout))
+  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+    Plyql(DruidUrl(protocol, host, port, "plyql"), defaultTimeout(connTimeout, readTimeout))
 
-  case class Overlord private[DruidClient](url: String, indexingTimeout: FiniteDuration, requestWithTimeouts: HttpRequest => HttpRequest) {
+  case class Overlord private[DruidClient](druidUrl: DruidUrl, indexingTimeout: FiniteDuration, requestWithTimeouts: HttpRequest => HttpRequest) {
 
     def postTasks(tasks: List[IndexTask], failFast: Boolean = true): List[Try[IndexingTaskResult]] = {
       tasks.foldLeft(new ListBuffer[Try[IndexingTaskResult]]) {
@@ -134,13 +139,13 @@ object DruidClient extends DruidClient {
     }
 
     def isHealthy: Try[Boolean] =
-      HttpClient.request(s"$url/status/health", 5)(requestWithTimeouts).map(_ == "true")
+      HttpClient.request(s"${druidUrl.baseUrl}/status/health", 5)(requestWithTimeouts).map(_ == "true")
 
     def getTaskLog(taskId: String): Try[String] =
-      HttpClient.request(s"$url/$taskId/log", 5)(requestWithTimeouts)
+      HttpClient.request(s"${druidUrl.url}/$taskId/log", 5)(requestWithTimeouts)
 
     def getTaskStatus(taskId: String): Try[TaskStatus] =
-      HttpClient.request(s"$url/$taskId/status", 5)(requestWithTimeouts)
+      HttpClient.request(s"${druidUrl.url}/$taskId/status", 5)(requestWithTimeouts)
         .flatMap { responseJson =>
           Try(ObjMapper.readValue[IndexTaskStatusResponse](responseJson).status)
             .recoverWith { case ex: Throwable =>
@@ -153,7 +158,7 @@ object DruidClient extends DruidClient {
       val start = System.currentTimeMillis()
       val jsonTask = ObjMapper.prettyWriter.writeValueAsString(task)
       logger.info(s"Posting indexing task : \n$jsonTask")
-      HttpClient.request(url, extraConnAttempts, recoveryConnSleep) { request =>
+      HttpClient.request(druidUrl.url, extraConnAttempts, recoveryConnSleep) { request =>
         requestWithTimeouts(request)
           .postData(jsonTask)
           .header("content-type", "application/json")
@@ -201,10 +206,10 @@ object DruidClient extends DruidClient {
     }
   }
 
-  case class Plyql private[DruidClient](url: String, requestWithTimeouts: HttpRequest => HttpRequest) {
+  case class Plyql private[DruidClient](druidUrl: DruidUrl, requestWithTimeouts: HttpRequest => HttpRequest) {
     def postQuery(sqlStatement: String): Try[String] = {
       logger.debug(s"Posting sql statement : \n$sqlStatement")
-      HttpClient.request(url, 5) { request =>
+      HttpClient.request(druidUrl.url, 5) { request =>
         requestWithTimeouts(request)
           .postData(ObjMapper.prettyWriter.writeValueAsString(Map("sql" -> sqlStatement)))
           .header("content-type", "application/json")
@@ -212,11 +217,11 @@ object DruidClient extends DruidClient {
     }
   }
 
-  case class Broker private[DruidClient](url: String, requestWithTimeouts: HttpRequest => HttpRequest) {
+  case class Broker private[DruidClient](druidUrl: DruidUrl, requestWithTimeouts: HttpRequest => HttpRequest) {
     import ObjMapper._
 
     def isHealthy: Try[Boolean] =
-      HttpClient.request(s"$url/status/health", 5)(requestWithTimeouts).map(_ == "true")
+      HttpClient.request(s"${druidUrl.baseUrl}/status/health", 5)(requestWithTimeouts).map(_ == "true")
 
     /**
       * @return response which is :
@@ -226,7 +231,7 @@ object DruidClient extends DruidClient {
     def postQuery[Q <: Query, R <: Response, C[X]](query: Q, pretty: Boolean = false)(implicit r: ResponseReader[Q,R,C]): Try[C[R]] = {
       val jsonQuery = ObjMapper.prettyWriter.writeValueAsString(query)
       logger.debug(s"Posting query : \n$jsonQuery")
-      val newUrl = if (pretty) url + "?pretty" else url
+      val newUrl = if (pretty) druidUrl.url + "?pretty" else druidUrl.url
       HttpClient.request(newUrl, 5) { request =>
         requestWithTimeouts(request)
           .postData(jsonQuery)
@@ -242,10 +247,10 @@ object DruidClient extends DruidClient {
     }
 
     def listMetrics(dataSource: String): Try[List[String]] =
-      HttpClient.request(s"$url/datasources/$dataSource/metrics", 5)(requestWithTimeouts).map(readValue[List[String]])
+      HttpClient.request(s"${druidUrl.url}/datasources/$dataSource/metrics", 5)(requestWithTimeouts).map(readValue[List[String]])
 
     def listDimensions(dataSource: String): Try[List[String]] =
-      HttpClient.request(s"$url/datasources/$dataSource/dimensions", 5)(requestWithTimeouts).map(readValue[List[String]])
+      HttpClient.request(s"${druidUrl.url}/datasources/$dataSource/dimensions", 5)(requestWithTimeouts).map(readValue[List[String]])
   }
 
   case class IntervalMetadata(size: Int, count: Int)
@@ -253,35 +258,35 @@ object DruidClient extends DruidClient {
   case class ShardSpec(`type`: String)
   case class Segment(dataSource: String, interval: String, loadSpec: LoadSpec, dimensions: String, metrics: String, shardSpec: ShardSpec, version: String, binaryVersion: Int, size: Int, identifier: String)
 
-  case class Coordinator private[DruidClient](url: String, requestWithTimeouts: HttpRequest => HttpRequest) {
+  case class Coordinator private[DruidClient](druidUrl: DruidUrl, requestWithTimeouts: HttpRequest => HttpRequest) {
     import ObjMapper._
 
     def isHealthy: Try[Boolean] =
-      HttpClient.request(s"$url/status/health", 5)(requestWithTimeouts).map(_ == "true")
+      HttpClient.request(s"${druidUrl.baseUrl}/status/health", 5)(requestWithTimeouts).map(_ == "true")
 
     /**
       * @return the current leader coordinator of the cluster.
       */
     def getLeader: Try[String] =
-      HttpClient.request(s"$url/leader", 5)(requestWithTimeouts)
+      HttpClient.request(s"${druidUrl.url}/leader", 5)(requestWithTimeouts)
 
     /**
       * @return the percentage of segments actually loaded in the cluster versus segments that should be loaded in the cluster.
       */
     def getLoadStatus: Try[Map[String, Double]] =
-      HttpClient.request(s"$url/loadstatus", 5)(requestWithTimeouts).map(readValue[Map[String, Double]])
+      HttpClient.request(s"${druidUrl.url}/loadstatus", 5)(requestWithTimeouts).map(readValue[Map[String, Double]])
 
     /**
       * @return the number of segments left to load until segments that should be loaded in the cluster are available for queries. This does not include replication.
       */
     def getLoadStatusSimple: Try[Map[String, Double]] =
-      HttpClient.request(s"$url/loadstatus?simple", 5)(requestWithTimeouts).map(readValue[Map[String, Double]])
+      HttpClient.request(s"${druidUrl.url}/loadstatus?simple", 5)(requestWithTimeouts).map(readValue[Map[String, Double]])
 
     /**
       * @return a list of the names of datasources in the cluster
       */
     def listDataSources(includeDisabled: Boolean): Try[List[String]] = {
-      val dataSourcesUrl = s"$url/metadata/datasources${Option(includeDisabled).filter(identity).map(_ => "?includeDisabled").getOrElse("")}"
+      val dataSourcesUrl = s"${druidUrl.url}/metadata/datasources${Option(includeDisabled).filter(identity).map(_ => "?includeDisabled").getOrElse("")}"
       HttpClient.request(dataSourcesUrl, 5)(requestWithTimeouts).map(readValue[List[String]])
     }
 
@@ -289,26 +294,26 @@ object DruidClient extends DruidClient {
       * @return full segment metadata for a specific segment as stored in the metadata store.
       */
     def getSegment(dataSource: String, segmentId: String): Try[Segment] =
-      HttpClient.request(s"$url/metadata/datasources/$dataSource/segments/$segmentId", 5)(requestWithTimeouts).map(readValue[Segment])
+      HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments/$segmentId", 5)(requestWithTimeouts).map(readValue[Segment])
 
     /**
       * @return a list of all segments for a datasource as stored in the metadata store.
       */
     def listSegmentIds(dataSource: String): Try[Seq[String]] =
-      HttpClient.request(s"$url/metadata/datasources/$dataSource/segments", 5)(requestWithTimeouts).map(readValue[Vector[String]])
+      HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments", 5)(requestWithTimeouts).map(readValue[Vector[String]])
 
     /**
       * @return a list of all segments for a datasource with the full segment metadata as stored in the metadata store.
       */
     def listSegments(dataSource: String): Try[Seq[Segment]] =
-      HttpClient.request(s"$url/metadata/datasources/$dataSource/segments?full", 5)(requestWithTimeouts).map(readValue[Vector[Segment]])
+      HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments?full", 5)(requestWithTimeouts).map(readValue[Vector[Segment]])
 
     /**
       * @param intervals ["2012-01-01T00:00:00.000/2012-01-03T00:00:00.000", "2012-01-05T00:00:00.000/2012-01-07T00:00:00.000"]
       * @return a list of all segments, overlapping with any of given intervals, for a datasource as stored in the metadata store.
       */
     def listOverlappingSegmentIds(dataSource: String, intervals: List[String]) =
-      HttpClient.request(s"$url/metadata/datasources/$dataSource/segments", 5) { request =>
+      HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments", 5) { request =>
           requestWithTimeouts(request)
           .postData(miniWriter.writeValueAsString(intervals))
           .header("content-type", "application/json")
@@ -319,7 +324,7 @@ object DruidClient extends DruidClient {
       * @return a list of all segments, overlapping with any of given intervals, for a datasource with the full segment metadata as stored in the metadata store
       */
     def listOverlappingSegments(dataSource: String, intervals: List[String]) =
-      HttpClient.request(s"$url/metadata/datasources/$dataSource/segments?full", 5) { request =>
+      HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments?full", 5) { request =>
         requestWithTimeouts(request)
           .postData(miniWriter.writeValueAsString(intervals))
           .header("content-type", "application/json")
@@ -331,7 +336,7 @@ object DruidClient extends DruidClient {
       */
     def listDataSourceIntervals(dataSource: String): Try[Option[Seq[String]]] =
       HttpClient
-        .request(s"$url/datasources/$dataSource/intervals", 5)(requestWithTimeouts)
+        .request(s"${druidUrl.url}/datasources/$dataSource/intervals", 5)(requestWithTimeouts)
         .map( intervals => Option(readValue[Vector[String]](intervals))) match {
           case Failure(HttpClientException(msg, statusCode, ex)) if statusCode == 204 || statusCode == 404 =>
             Success(Option.empty)
@@ -343,19 +348,19 @@ object DruidClient extends DruidClient {
       * @return a map of an interval to a JSON object containing the total byte size of segments and number of segments for that interval.
       */
     def listDataSourceIntervalMetadata(dataSource: String): Try[Map[String, IntervalMetadata]] =
-      HttpClient.request(s"$url/datasources/$dataSource/intervals?simple", 5)(requestWithTimeouts).map(readValue[Map[String, IntervalMetadata]])
+      HttpClient.request(s"${druidUrl.url}/datasources/$dataSource/intervals?simple", 5)(requestWithTimeouts).map(readValue[Map[String, IntervalMetadata]])
 
     /**
       * Disables a segment. Note that it takes druid.coordinator.period + druid.manager.segments.pollDuration for changes to reflect
       */
     def deleteSegment(dataSource: String, segmentId: String): Try[String] =
-      HttpClient.request(s"$url/datasources/$dataSource/segments/$segmentId", 5)(requestWithTimeouts(_).method("DELETE"))
+      HttpClient.request(s"${druidUrl.url}/datasources/$dataSource/segments/$segmentId", 5)(requestWithTimeouts(_).method("DELETE"))
 
     /**
       * Runs a Kill task for a given interval and datasource
       */
     def deleteInterval(dataSource: String, interval: String): Try[String] =
-      HttpClient.request(s"$url/datasources/$dataSource/intervals/${interval.replace('/', '_')}", 5)(requestWithTimeouts(_).method("DELETE"))
+      HttpClient.request(s"${druidUrl.url}/datasources/$dataSource/intervals/${interval.replace('/', '_')}", 5)(requestWithTimeouts(_).method("DELETE"))
 
   }
 }
