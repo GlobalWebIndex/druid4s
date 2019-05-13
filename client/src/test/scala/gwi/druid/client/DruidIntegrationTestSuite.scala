@@ -31,8 +31,8 @@ class DruidIntegrationTestSuite extends FreeSpec with ScalaFutures with Matchers
   lazy private val segmentGrn = Granularity.HOUR
   lazy private val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
 
-  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$druidUser:$druidPassword@$brokerHost", protocol = "https")(5.seconds, 1.minute)
-  lazy private val overlordClient = DruidClient.forIndexing(s"$druidUser:$druidPassword@$overlordHost", protocol = "https")(5.seconds, 5.seconds, 1.minute)
+  lazy private val brokerClient = DruidClient.forQueryingBroker(s"$druidUser:$druidPassword@$brokerHost", port = 80, protocol = "https")(5.seconds, 1.minute)
+  lazy private val overlordClient = DruidClient.forIndexing(s"$druidUser:$druidPassword@$overlordHost", port = 80, protocol = "https")(5.seconds, 5.seconds, 1.minute)
 
   require(brokerClient.isHealthy.get, "Broker is not healthy !!!")
   require(overlordClient.isHealthy.get, "Overlord is not healthy !!!")
