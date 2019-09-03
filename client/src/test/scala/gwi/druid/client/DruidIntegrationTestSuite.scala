@@ -31,15 +31,17 @@ class DruidIntegrationTestSuite
   lazy private val intervals =
     segmentGrn.getIterable(from, to).map(_.toString).toList
 
+  val brokerHost = sys.env.getOrElse(
+    "BROKER_HOST",
+    throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
+  val overlordHost = sys.env.getOrElse(
+    "OVERLORD_HOST",
+    throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
+
   lazy private val brokerClient =
-    DruidClient.forQueryingBroker("druid-broker-staging.in.globalwebindex.com")(
-      5.seconds,
-      1.minute)
+    DruidClient.forQueryingBroker(brokerHost)(5.seconds, 1.minute)
   lazy private val overlordClient =
-    DruidClient.forIndexing("druid-overlord-staging.in.globalwebindex.com")(
-      5.seconds,
-      5.seconds,
-      3.minute)
+    DruidClient.forIndexing(overlordHost)(5.seconds, 5.seconds, 3.minute)
 
   require(brokerClient.isHealthy.get, "Broker is not healthy !!!")
   require(overlordClient.isHealthy.get, "Overlord is not healthy !!!")

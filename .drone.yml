@@ -24,6 +24,8 @@ steps:
   - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
   environment:
     GOOGLE_APPLICATION_CREDENTIALS: /tmp/key.json
+    BROKER_HOST: "druid-broker-staging.in.globalwebindex.com"
+    OVERLORD_HOST: "druid-overlord-staging.in.globalwebindex.com"
     TEST_CREDENTIALS:
       from_secret: sa_qpipeline_s
   volumes:
