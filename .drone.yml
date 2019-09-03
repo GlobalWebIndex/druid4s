@@ -20,16 +20,10 @@ steps:
   pull: default
   image: gwiq/sbt-docker:latest
   commands:
-  - "echo $TEST_CREDENTIALS | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS"
+  - "echo $TEST_CREDENTIALS > $GOOGLE_APPLICATION_CREDENTIALS"
   - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
   environment:
-    BROKER_HOST: broker.qpipe-s.globalwebindex.net
-    DRUID_PASSWORD:
-      from_secret: druid_password
-    DRUID_USER:
-      from_secret: druid_user
     GOOGLE_APPLICATION_CREDENTIALS: /tmp/key.json
-    OVERLORD_HOST: overlord.qpipe-s.globalwebindex.net
     TEST_CREDENTIALS:
       from_secret: sa_qpipeline_s
   volumes:
