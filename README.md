@@ -1,6 +1,6 @@
 ## druid4s
 
-[![DroneCI](https://drone.globalwebindex.net/api/badges/GlobalWebIndex/druid4s/status.svg)](https://drone.globalwebindex.net/GlobalWebIndex/druid4s)
+[![Build Status](https://drone.in.globalwebindex.com/api/badges/GlobalWebIndex/druid4s/status.svg)](https://drone.globalwebindex.com/GlobalWebIndex/druid4s)
 
 ```
 "net.globalwebindex" %% "druid4s-client" % "x.y.z"
