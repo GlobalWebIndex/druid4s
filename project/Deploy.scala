@@ -7,7 +7,7 @@ object Deploy {
     publishArtifact := true,
     publishMavenStyle := true,
     publishArtifact in Test := false,
-    organization := "gwidx",
+    organization := ghOrganizationName,
     homepage := Some(url(
       s"https://github.com/$ghOrganizationName/$ghProjectName/blob/master/README.md")),
     licenses in ThisBuild += ("MIT", url("http://opensource.org/licenses/MIT")),
@@ -20,6 +20,7 @@ object Deploy {
               s"git@github.com:$ghOrganizationName/$ghProjectName.git")),
     bintrayVcsUrl := Some(
       s"git@github.com:$ghOrganizationName/$ghProjectName.git"),
+    bintrayOrganization := Some("gwidx"),
     bintrayRepository := "maven",
     pomIncludeRepository := { _ =>
       false
