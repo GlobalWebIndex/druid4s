@@ -32,13 +32,14 @@ class DruidIntegrationTestSuite
     segmentGrn.getIterable(from, to).map(_.toString).toList
 
   lazy private val brokerClient =
-    DruidClient.forQueryingBroker("druid-broker-staging.in.globalwebindex.com",
-                                  port = 80,
-                                  protocol = "http")(5.seconds, 1.minute)
+    DruidClient.forQueryingBroker("druid-broker-staging.in.globalwebindex.com")(
+      5.seconds,
+      1.minute)
   lazy private val overlordClient =
-    DruidClient.forIndexing("druid-overlord-staging.in.globalwebindex.com",
-                            port = 80,
-                            protocol = "http")(5.seconds, 5.seconds, 3.minute)
+    DruidClient.forIndexing("druid-overlord-staging.in.globalwebindex.com")(
+      5.seconds,
+      5.seconds,
+      3.minute)
 
   require(brokerClient.isHealthy.get, "Broker is not healthy !!!")
   require(overlordClient.isHealthy.get, "Overlord is not healthy !!!")
