@@ -1,32 +1,63 @@
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
 clone:
-  git:
-    image: plugins/git
+  disable: true
+
+steps:
+- name: git
+  pull: default
+  image: plugins/git
+  settings:
     depth: 50
     tags: true
 
-pipeline:
+- name: run-tests
+  pull: default
+  image: gwiq/sbt-docker:latest
+  commands:
+  - "echo $TEST_CREDENTIALS | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS"
+  - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
+  environment:
+    BROKER_HOST: broker.qpipe-s.globalwebindex.net
+    DRUID_PASSWORD:
+      from_secret: druid_password
+    DRUID_USER:
+      from_secret: druid_user
+    GOOGLE_APPLICATION_CREDENTIALS: /tmp/key.json
+    OVERLORD_HOST: overlord.qpipe-s.globalwebindex.net
+    TEST_CREDENTIALS:
+      from_secret: sa_qpipeline_s
+  volumes:
+  - name: sbt
+    path: /cache
+  when:
+    event:
+    - push
 
-  run-tests:
-    image: gwiq/sbt-docker:latest
-    environment:
-      - BROKER_HOST=broker.qpipe-s.globalwebindex.net
-      - OVERLORD_HOST=overlord.qpipe-s.globalwebindex.net
-      - GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
-    volumes:
-      - /var/lib/docker/sbt:/cache
-    secrets: [ test_credentials, druid_user, druid_password ]
-    commands:
-      - echo $TEST_CREDENTIALS | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
-      - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
-    when:
-      event: push
+- name: publish-maven-artifacts
+  pull: default
+  image: gwiq/sbt-docker:latest
+  commands:
+  - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
+  environment:
+    BINTRAY_PASS:
+      from_secret: bintray_pass
+    BINTRAY_USER:
+      from_secret: bintray_user
+  volumes:
+  - name: sbt
+    path: /cache
+  when:
+    event:
+    - promote
+    - tag
 
-  publish-maven-artifacts:
-    image: gwiq/sbt-docker:latest
-    volumes:
-      - /var/lib/docker/sbt:/cache
-    commands:
-      - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
-    secrets: [ bintray_user, bintray_pass ]
-    when:
-      event: [deployment, tag]
+volumes:
+- name: sbt
+  host:
+    path: /var/lib/docker/sbt
