@@ -7,7 +7,6 @@ object Deploy {
     publishArtifact := true,
     publishMavenStyle := true,
     publishArtifact in Test := false,
-    organization := ghOrganizationName,
     homepage := Some(url(
       s"https://github.com/$ghOrganizationName/$ghProjectName/blob/master/README.md")),
     licenses in ThisBuild += ("MIT", url("http://opensource.org/licenses/MIT")),
