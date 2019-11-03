@@ -12,7 +12,7 @@ object Dependencies {
   lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.0.8"         % "test"
 
   lazy val loggingApi                   = Seq(
-    "org.slf4j"                     %     "slf4j-api"                             % "1.7.28",
+    "org.slf4j"                     %     "slf4j-api"                             % "1.7.29",
     "com.typesafe.scala-logging"    %%    "scala-logging"                         % "3.9.2"
   )
 
