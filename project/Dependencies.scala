@@ -4,7 +4,7 @@ object Dependencies {
 
   val akkaVersion       = "2.5.26"
   val randagenVersion   = "0.2.7"
-  val jacksonVersion    = "2.9.10"
+  val jacksonVersion    = "2.10.1"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
