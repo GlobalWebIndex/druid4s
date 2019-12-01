@@ -3,9 +3,10 @@ package gwi.druid.utils
 import java.util.TimeZone
 
 import org.joda.time._
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class GranularitySpec extends FreeSpec with Matchers {
+class GranularitySpec extends AnyFreeSpec with Matchers {
   import Granularity._
 
   "testGetUnits" in {

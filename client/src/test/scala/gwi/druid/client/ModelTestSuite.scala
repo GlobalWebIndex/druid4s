@@ -1,9 +1,10 @@
 package gwi.druid.client
 
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class ModelTestSuite extends FreeSpec with ScalaFutures with Matchers {
+class ModelTestSuite extends AnyFreeSpec with ScalaFutures with Matchers {
 
   val s = "string"
   val ss = List("string")
