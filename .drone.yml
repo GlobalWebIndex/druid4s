@@ -21,7 +21,7 @@ steps:
   image: gwiq/sbt-docker:latest
   commands:
   - "echo $TEST_CREDENTIALS > $GOOGLE_APPLICATION_CREDENTIALS"
-  - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 -Dsbt.gigahorse=false test
+  - sbt -color=always -mem 1024 -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 test
   environment:
     GOOGLE_APPLICATION_CREDENTIALS: /tmp/key.json
     BROKER_HOST: "druid-broker-staging.in.globalwebindex.com"
@@ -39,7 +39,7 @@ steps:
   pull: default
   image: gwiq/sbt-docker:latest
   commands:
-  - sbt -mem 1024 -Djline.terminal=off -Dcoursier.cache=/cache/.coursier -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
+  - sbt -color=always -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
   environment:
     BINTRAY_PASS:
       from_secret: bintray_pass
