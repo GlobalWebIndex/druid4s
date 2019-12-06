@@ -18,7 +18,7 @@ steps:
 
 - name: run-tests
   pull: default
-  image: gwiq/sbt-docker:latest
+  image: lustefaniak/sbt:graalvm11_1.3.4_2.13.1
   commands:
   - "echo $TEST_CREDENTIALS > $GOOGLE_APPLICATION_CREDENTIALS"
   - sbt -color=always -mem 1024 -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 test
@@ -37,7 +37,7 @@ steps:
 
 - name: publish-maven-artifacts
   pull: default
-  image: gwiq/sbt-docker:latest
+  image: lustefaniak/sbt:graalvm11_1.3.4_2.13.1
   commands:
   - sbt -color=always -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
   environment:
