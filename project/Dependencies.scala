@@ -2,17 +2,16 @@ import sbt._
 
 object Dependencies {
 
-  val akkaVersion       = "2.5.26"
   val randagenVersion   = "0.2.7"
-  val jacksonVersion    = "2.9.10"
+  val jacksonVersion    = "2.10.1"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
-  lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                        % "2.4.1"
-  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.0.8"         % "test"
+  lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                        % "2.4.2"
+  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.1.0"         % "test"
 
   lazy val loggingApi                   = Seq(
-    "org.slf4j"                     %     "slf4j-api"                             % "1.7.28",
+    "org.slf4j"                     %     "slf4j-api"                             % "1.7.29",
     "com.typesafe.scala-logging"    %%    "scala-logging"                         % "3.9.2"
   )
 
