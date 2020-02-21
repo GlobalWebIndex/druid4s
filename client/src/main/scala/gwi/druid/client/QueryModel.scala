@@ -194,6 +194,29 @@ case class TopNQuery(
     ) extends Query
 case class TopNResponse(timestamp: String, result: IndexedSeq[Map[String, Any]]) extends Response
 
+/** S.C.A.N   Q.U.E.R.Y */
+object ScanQuery {
+  object Order {
+    val ascending = "ascending"
+    val descending = "descending"
+    val none = "none"
+  }
+}
+case class ScanQuery(
+  queryType: String,
+  dataSource: String,
+  intervals: List[String],
+  resultFormat: String,
+  batchSize: Option[Int] = Option.empty,
+  order: Option[String],
+  limit: Option[Int] = Option.empty,
+  filter: Option[Filter] = Option.empty,
+  columns: List[String] = List.empty,
+  context: Option[Context] = Option.empty
+) extends Query
+
+case class ScanResponse(segmentId: String, columns: List[String], events: IndexedSeq[Map[String, Any]]) extends Response
+
 /** S.E.L.E.C.T   Q.U.E.R.Y **/
 
 case class PagingSpec(pagingIdentifiers: Map[String, Int], threshold: Int)
@@ -266,6 +289,17 @@ object Query {
         context: Option[Context] = Option.empty
       ): SelectQuery = SelectQuery("select", dataSource, granularity, intervals, pagingSpec, filter, dimensions, metrics, context)
 
+  def scan(
+        dataSource: String,
+        intervals: List[String],
+        columns: List[String] = List.empty,
+        batchSize: Option[Int] = Option.empty,
+        filter: Option[Filter] = Option.empty,
+        order: Option[String] = Option.empty,
+        limit: Option[Int] = Option.empty,
+        context: Option[Context] = Option.empty
+      ): ScanQuery = ScanQuery("scan", dataSource, intervals, "list", batchSize, order, limit, filter, columns, context)
+
   def timeUnbounded(dataSource: String, context: Option[Context] = Option.empty): TimeBoundaryQuery =
     TimeBoundaryQuery("timeBoundary", dataSource, Option.empty, context = context)
   def timeUpperBounded(dataSource: String, context: Option[Context] = Option.empty): TimeBoundaryQuery =
@@ -289,6 +323,9 @@ trait ResponseReader[Q <: Query, R <: Response, C[X]] {
 object ResponseReader {
   implicit object SelectResponseReader extends ResponseReader[SelectQuery, SelectResponse, Option] {
     def read(json: String): Option[SelectResponse] = ObjMapper.readValue[List[SelectResponse]](json).headOption
+  }
+  implicit object ScanResponseReader extends ResponseReader[ScanQuery, ScanResponse, Option] {
+    def read(json: String): Option[ScanResponse] = ObjMapper.readValue[List[ScanResponse]](json).headOption
   }
   implicit object TimeSeriesResponseReader extends ResponseReader[TimeSeriesQuery, TimeSeriesResponse, Option] {
     def read(json: String): Option[TimeSeriesResponse] = ObjMapper.readValue[List[TimeSeriesResponse]](json).headOption

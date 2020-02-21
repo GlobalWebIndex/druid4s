@@ -45,6 +45,8 @@ object Samples {
     Query.timeSeries(dataSource, granularity, intervals, List(Aggregation.longSum(countAggName, countAggName)))
   def rawSelect(intervals: List[String], granularity: String = queryGranularityALL) =
     Query.select(dataSource, granularity, intervals, PagingSpec(Map.empty, 20*1000))
+  def rawScan(intervals: List[String]) =
+    Query.scan(dataSource, intervals)
   def hllTimeSeries(intervals: List[String], granularity: String = queryGranularityALL) =
     Query.timeSeries(dataSource, granularity, intervals, List(Aggregation.hll(uuidHllAggName, uuidHllAggName)))
   def sumTimeSeries(intervals: List[String], granularity: String = queryGranularityALL) =
