@@ -180,14 +180,14 @@ object DruidClient extends DruidClient {
             case Failure(ex) =>
               logger.error("Indexing failed ...", ex)
               Failure(ex)
-            case Success(s) if s.status == successStatusCode =>
+            case Success(s) if s.statusCode == successStatusCode =>
               val status = s.copy(duration = (System.currentTimeMillis() - start).toInt)
               Success(IndexingTaskResult(status, List.empty))
-            case Success(s) if s.status == failedStatusCode && extraAttempts > 0 =>
+            case Success(s) if s.statusCode == failedStatusCode && extraAttempts > 0 =>
               logger.error(s"Indexing finished with failed status code $failedStatusCode ... repeating ...")
               Thread.sleep(recoverySleep)
               postTask(task, extraAttempts-1)
-            case Success(s) if s.status == failedStatusCode =>
+            case Success(s) if s.statusCode == failedStatusCode =>
               logger.error(s"Indexing finished with failed status code $failedStatusCode ...")
               getTaskLog(taskId).map(_.split("\n")).map { logLines =>
                 logger.error(s"Indexing failed due to:${logLines.mkString("\n","\n","\n")}")
@@ -198,7 +198,7 @@ object DruidClient extends DruidClient {
             case Success(s) if System.currentTimeMillis() < deadLine =>
               awaitIndexingCompletion
             case Success(s) =>
-              Failure(DruidClientException(s"Indexing timed out after ${indexingTimeout.toSeconds} seconds with status: $s", s.status))
+              Failure(DruidClientException(s"Indexing timed out after ${indexingTimeout.toSeconds} seconds with status: $s", s.statusCode))
           }
         }
         awaitIndexingCompletion

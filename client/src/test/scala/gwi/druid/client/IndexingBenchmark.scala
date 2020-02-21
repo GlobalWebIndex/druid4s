@@ -109,7 +109,7 @@ case class IndexingBenchResult(totalSize: Int, tookTotal: Long, queryResponses: 
        |size : ${formatter.format(totalSize)} events
        |tasks : ${results.size}
        |crashed tasks : ${results.count(_.isFailure)}
-       |failed tasks : ${results.filter(_.isSuccess).count(_.get.status.status != TaskStatus.SUCCESS)}
+       |failed tasks : ${results.filter(_.isSuccess).count(_.get.status.statusCode != TaskStatus.SUCCESS)}
        |took total: ${scale(tookTotal/1000)} s
        |throughput: ${scale(throughputTotal)} events/s
        |query responses: ${queryResponses.mkString("\n", "\n--------------------------------------------------\n", "\n")}
