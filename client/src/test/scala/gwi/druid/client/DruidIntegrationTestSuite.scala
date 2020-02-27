@@ -71,28 +71,23 @@ class DruidIntegrationTestSuite
         s"gs://$sourceDataBucket/$targetDirPath"
       )
     val result = overlordClient.postTask(hadoopTask).get
-    logger.info(s"Indexing finished : ${result.status.status}")
-    if (result.status.status != TaskStatus.SUCCESS)
+    logger.info(s"Indexing finished : ${result.status.statusCode}")
+    if (result.status.statusCode != TaskStatus.SUCCESS)
       logger.error(
         s"Indexing failed !!! ${result.errors.mkString("\n", "\n", "\n")}")
-    assertResult(TaskStatus.SUCCESS)(result.status.status)
+    assertResult(TaskStatus.SUCCESS)(result.status.statusCode)
     Thread.sleep(8000) // data becomes queryable after a while, depending on segments poll duration
   }
 
   override def beforeAll(): Unit = indexTestData()
 
-  "select" in {
-    val response =
-      brokerClient.postQuery(rawSelect(intervals), pretty = true).get.get
-    val result = response.result
-    val events = result.events
+  "scan" in {
+    val response = brokerClient.postQuery(rawScan(intervals), pretty = true).get.get
+    val events = response.events
     val headEvent = events.head
-    assert(response.timestamp.nonEmpty)
-    assertResult(3)(result.pagingIdentifiers.size)
-    assertResult(sampleSize)(events.length)
-    assert(headEvent.segmentId.nonEmpty)
-    assert(headEvent.offset == 0)
-    assert(headEvent.event.nonEmpty)
+    assert(response.segmentId.nonEmpty)
+    assertResult(sampleSize / intervals.size)(events.length)
+    assert(headEvent.nonEmpty)
   }
 
   "count" in {
@@ -107,7 +102,7 @@ class DruidIntegrationTestSuite
       brokerClient.postQuery(hllTimeSeries(intervals), pretty = true).get.get
     assert(response.timestamp.nonEmpty)
     val uniqueCount = response.result(uuidHllAggName)
-    assert(5350 < uniqueCount && uniqueCount < 5450)
+    assert(5350d < uniqueCount && uniqueCount < 5450d)
   }
 
   "sum" in {

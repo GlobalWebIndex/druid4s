@@ -161,8 +161,22 @@ object IndexTask {
   val indexType = "index"
 }
 
+case class Location(host: String, port: Int, tlsPort: Int)
+
 case class IndexTaskResponse(task: String)
-case class TaskStatus(id: String, status: String, duration: Int, errorMsg: Option[String] = Option.empty)
+case class TaskStatus(
+  id: String,
+  statusCode: String,
+  status: Option[String],
+  runnerStatusCode: String,
+  `type`: String,
+  dataSource: String,
+  location: Location,
+  duration: Int,
+  createdTime: String,
+  queueInsertionTime: String,
+  errorMsg: Option[String] = Option.empty
+)
 object TaskStatus {
   val SUCCESS = "SUCCESS"
   val FAILED = "FAILED"
