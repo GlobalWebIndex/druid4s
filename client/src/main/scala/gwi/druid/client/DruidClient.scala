@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import gwi.druid.client.DruidClient.{Broker, Coordinator, Overlord, Plyql}
+import gwi.druid.utils.Granularity
+import org.joda.time.Interval
+import org.joda.time.chrono.ISOChronology
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
@@ -17,6 +20,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 import scalaj.http.HttpRequest
+
+import scala.collection.breakOut
 
 case class DruidClientException(msg: String, status: String, optCause: Option[Throwable] = None) extends Exception(msg, optCause.orNull)
 case class IndexingTaskResult(status: TaskStatus, errors: List[String]) {
@@ -312,7 +317,7 @@ object DruidClient extends DruidClient {
       * @param intervals ["2012-01-01T00:00:00.000/2012-01-03T00:00:00.000", "2012-01-05T00:00:00.000/2012-01-07T00:00:00.000"]
       * @return a list of all segments, overlapping with any of given intervals, for a datasource as stored in the metadata store.
       */
-    def listOverlappingSegmentIds(dataSource: String, intervals: List[String]) =
+    def listOverlappingSegmentIds(dataSource: String, intervals: List[String]): Try[Vector[String]] =
       HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments", 5) { request =>
           requestWithTimeouts(request)
           .postData(miniWriter.writeValueAsString(intervals))
@@ -323,7 +328,7 @@ object DruidClient extends DruidClient {
       * @param intervals ["2012-01-01T00:00:00.000/2012-01-03T00:00:00.000", "2012-01-05T00:00:00.000/2012-01-07T00:00:00.000"]
       * @return a list of all segments, overlapping with any of given intervals, for a datasource with the full segment metadata as stored in the metadata store
       */
-    def listOverlappingSegments(dataSource: String, intervals: List[String]) =
+    def listOverlappingSegments(dataSource: String, intervals: List[String]): Try[Vector[Segment]] =
       HttpClient.request(s"${druidUrl.url}/metadata/datasources/$dataSource/segments?full", 5) { request =>
         requestWithTimeouts(request)
           .postData(miniWriter.writeValueAsString(intervals))
@@ -343,6 +348,22 @@ object DruidClient extends DruidClient {
           case result =>
             result
         }
+
+    def listMissingIntervals(range: Interval, granularity: Granularity, datasource: String): Try[Vector[String]] =
+      listDataSourceIntervals(datasource)
+        .map { intervals =>
+          intervals
+            .getOrElse(Seq.empty)
+            .flatMap(i => granularity.getIterable(new Interval(i, ISOChronology.getInstanceUTC)))
+            .map(i => granularity.bucket(i.getStart))
+            .filter(range.contains)
+            .toSet[Interval]
+            .toVector
+            .sortWith { case (x, y) => x.getStart.compareTo(y.getStart) < 0 }
+        }.map { presentIntervals =>
+          val allIntervals = Granularity.HOUR.getIterable(range).toSet
+          (allIntervals -- presentIntervals).map(_.toString)(breakOut)
+      }
 
     /**
       * @return a map of an interval to a JSON object containing the total byte size of segments and number of segments for that interval.
