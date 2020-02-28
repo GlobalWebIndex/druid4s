@@ -349,20 +349,25 @@ object DruidClient extends DruidClient {
             result
         }
 
-    def listMissingIntervals(range: Interval, granularity: Granularity, datasource: String): Try[Vector[String]] =
+    /**
+      * @return a set of segment intervals
+      * @note that result is optional in case data-source is missing
+      */
+    def listMissingIntervals(range: Interval, granularity: Granularity, datasource: String): Try[Option[Vector[String]]] =
       listDataSourceIntervals(datasource)
-        .map { intervals =>
+        .map { _.map { intervals =>
           intervals
-            .getOrElse(Seq.empty)
             .flatMap(i => granularity.getIterable(new Interval(i, ISOChronology.getInstanceUTC)))
             .map(i => granularity.bucket(i.getStart))
             .filter(range.contains)
             .toSet[Interval]
             .toVector
             .sortWith { case (x, y) => x.getStart.compareTo(y.getStart) < 0 }
-        }.map { presentIntervals =>
-          val allIntervals = Granularity.HOUR.getIterable(range).toSet
+          }
+        }.map { _.map { presentIntervals =>
+          val allIntervals = granularity.getIterable(range).toSet
           (allIntervals -- presentIntervals).map(_.toString)(breakOut)
+        }
       }
 
     /**

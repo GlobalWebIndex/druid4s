@@ -160,6 +160,6 @@ class DruidIntegrationTestSuite
     val expectedResult = new Interval(to, to.plusHours(1))
     val response =
       coordinatorClient.listMissingIntervals(new Interval(from, to.plusHours(1)), Granularity.HOUR, "gwiq")
-    response.get shouldBe Vector(expectedResult.toString)
+    response.get.get shouldBe Vector(expectedResult.toString)
   }
 }
