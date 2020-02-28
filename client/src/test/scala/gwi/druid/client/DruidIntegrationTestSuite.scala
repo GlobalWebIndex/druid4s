@@ -3,7 +3,7 @@ package gwi.druid.client
 import com.typesafe.scalalogging.LazyLogging
 import gwi.druid.utils.Granularity
 import gwi.randagen._
-import org.joda.time.{DateTime, DateTimeZone}
+import org.joda.time.{DateTime, DateTimeZone, Interval}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FreeSpec, Matchers}
 
@@ -37,14 +37,20 @@ class DruidIntegrationTestSuite
   val overlordHost = sys.env.getOrElse(
     "OVERLORD_HOST",
     throw new IllegalStateException(s"BROKER_HOST env var must be defined !!!"))
+  val coordinatorHost = sys.env.getOrElse(
+    "COORDINATOR_HOST",
+    throw new IllegalStateException(s"COORDINATOR_HOST env var must be defined !!!"))
 
   lazy private val brokerClient =
     DruidClient.forQueryingBroker(brokerHost)(5.seconds, 1.minute)
   lazy private val overlordClient =
     DruidClient.forIndexing(overlordHost)(5.seconds, 5.seconds, 3.minute)
+  lazy private val coordinatorClient =
+    DruidClient.forQueryingCoordinator(coordinatorHost)(10.seconds, 30.seconds)
 
   require(brokerClient.isHealthy.get, "Broker is not healthy !!!")
   require(overlordClient.isHealthy.get, "Overlord is not healthy !!!")
+  require(coordinatorClient.isHealthy.get, "Coordinator is not healthy !!!")
 
   def indexTestData(): Unit = {
     logger.info(s"Data generation initialized ...")
@@ -148,5 +154,12 @@ class DruidIntegrationTestSuite
       response.result.map(_(purchaseFieldName)).toSet)
     assertResult(sampleSize)(
       response.result.map(_(priceSumAggName).toString.toInt).sum)
+  }
+
+  "missing intervals" in {
+    val expectedResult = new Interval(to, to.plusHours(1))
+    val response =
+      coordinatorClient.listMissingIntervals(new Interval(from, to.plusHours(1)), Granularity.HOUR, "gwiq")
+    response.get.get shouldBe Vector(expectedResult.toString)
   }
 }
