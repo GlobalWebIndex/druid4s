@@ -350,7 +350,7 @@ object DruidClient extends DruidClient {
         }
 
     /**
-      * @return a set of segment intervals
+      * @return a set of missing intervals of given granularity within given range and datasource
       * @note that result is optional in case data-source is missing
       */
     def listMissingIntervals(range: Interval, granularity: Granularity, datasource: String): Try[Option[Vector[String]]] =
