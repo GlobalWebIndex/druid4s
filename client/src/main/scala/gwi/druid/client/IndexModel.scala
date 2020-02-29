@@ -171,6 +171,7 @@ case class TaskStatus(
   runnerStatusCode: String,
   `type`: String,
   dataSource: String,
+  groupId: Option[String] = Option.empty,
   location: Location,
   duration: Int,
   createdTime: String,
