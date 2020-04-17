@@ -9,16 +9,23 @@ object Samples {
 
   import SampleEventDefFactory._
 
-  val dataSource = "gwiq"
+  val dataSource          = "gwiq"
   val queryGranularityALL = "all"
 
-  val idxSumAggName = "indexSum"
-  val priceSumAggName = "priceSum"
-  val countAggName = "count"
+  val idxSumAggName          = "indexSum"
+  val priceSumAggName        = "priceSum"
+  val countAggName           = "count"
   val countByPurchaseAggName = "countByPurchase"
-  val uuidHllAggName = "uuidHll"
+  val uuidHllAggName         = "uuidHll"
 
-  def hadoopTask(segmentGrn: Granularity, segmentIntervals: List[String], queryGrn: Granularity, dataGrn: Granularity, pathFormat: String, inputPath: String): IndexTask =
+  def hadoopTask(
+      segmentGrn: Granularity,
+      segmentIntervals: List[String],
+      queryGrn: Granularity,
+      dataGrn: Granularity,
+      pathFormat: String,
+      inputPath: String
+  ): IndexTask =
     IndexTask(
       IndexTask.hadoopType,
       IngestionSpec(
@@ -26,10 +33,16 @@ object Samples {
           dataSource,
           Parser.hadoopyString(
             ParseSpec.json(
-              TimestampSpec(timeFieldName), DimensionsSpec(List.empty, List(timeFieldName, uuidFieldName, idxFieldName, priceFieldName), List.empty)
+              TimestampSpec(timeFieldName),
+              DimensionsSpec(List.empty, List(timeFieldName, uuidFieldName, idxFieldName, priceFieldName), List.empty)
             )
           ),
-          List(Aggregation.count(countAggName), Aggregation.hll(uuidHllAggName, uuidFieldName), Aggregation.longSum(idxSumAggName, idxFieldName), Aggregation.doubleSum(priceSumAggName, priceFieldName)),
+          List(
+            Aggregation.count(countAggName),
+            Aggregation.hll(uuidHllAggName, uuidFieldName),
+            Aggregation.longSum(idxSumAggName, idxFieldName),
+            Aggregation.doubleSum(priceSumAggName, priceFieldName)
+          ),
           GranularitySpec.uniform(segmentIntervals, rollup = true, Some(segmentGrn.toString), Some(queryGrn.toString))
         ),
         IoConfig.hadoop(InputSpec.granularity(dataGrn.toString, inputPath, ".*json\\.gz", Some(pathFormat))),

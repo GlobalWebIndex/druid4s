@@ -46,7 +46,6 @@ class GranularitySpec extends AnyFreeSpec with Matchers {
     assertResult(new DateTime("2011-03-15T22:42:23.000"))(SECOND.truncate(date))
   }
 
-
   "testGetIterable" in {
     val intervals = DAY.getIterable(new DateTime("2011-01-01T00:00:00"), new DateTime("2011-01-14T00:00:00")).toList
     val expected = List(
@@ -66,7 +65,6 @@ class GranularitySpec extends AnyFreeSpec with Matchers {
     ).map(new Interval(_))
     assertResult(expected)(intervals)
   }
-
 
   "testGetReverseIterable" in {
     val intervals = DAY.getReverseIterable(new DateTime("2011-01-01T00:00:00"), new DateTime("2011-01-14T00:00:00")).toList
@@ -113,8 +111,8 @@ class GranularitySpec extends AnyFreeSpec with Matchers {
 
   private case class TestInterval(years: Int, months: Int, days: Int, hours: Int, minutes: Int, seconds: Int, millis: Int) {
     private val start = new DateTime(2001, 1, 1, 0, 0, 0, 0)
-    private val end = start.plusYears(years).plusMonths(months).plusDays(days).plusHours(hours).plusMinutes(minutes).plusSeconds(seconds).plusMillis(millis)
-    val interval = new Interval(start, end)
+    private val end   = start.plusYears(years).plusMonths(months).plusDays(days).plusHours(hours).plusMinutes(minutes).plusSeconds(seconds).plusMillis(millis)
+    val interval      = new Interval(start, end)
 
     def getYears: Int = Years.yearsIn(interval).getYears
 
