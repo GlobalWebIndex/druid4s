@@ -16,7 +16,7 @@ import scala.util.Try
 
 object IndexingBenchmark extends App with DruidBootstrap {
 
-  val dataDir = Paths.get("/tmp/druid4s-test/events")
+  val dataDir   = Paths.get("/tmp/druid4s-test/events")
   val reportDir = Paths.get("/tmp/druid4s-test/bench")
 
   reportDir.toFile.mkdirs()
@@ -25,12 +25,24 @@ object IndexingBenchmark extends App with DruidBootstrap {
   sys.addShutdownHook(cleanUp())
 
   // 5 days have 432 millions millis
-  runBench("4_4_8",  List(432000,864000), SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 4, dynamicMaxFieldCount = 4, dynamicDataPointsCount = 8))
-  runBench("6_6_16", List(432000,864000), SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 6, dynamicMaxFieldCount = 6, dynamicDataPointsCount = 16))
-  runBench("8_8_32", List(432000,864000), SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 8, dynamicMaxFieldCount = 8, dynamicDataPointsCount = 32))
+  runBench(
+    "4_4_8",
+    List(432000, 864000),
+    SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 4, dynamicMaxFieldCount = 4, dynamicDataPointsCount = 8)
+  )
+  runBench(
+    "6_6_16",
+    List(432000, 864000),
+    SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 6, dynamicMaxFieldCount = 6, dynamicDataPointsCount = 16)
+  )
+  runBench(
+    "8_8_32",
+    List(432000, 864000),
+    SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 8, dynamicMaxFieldCount = 8, dynamicDataPointsCount = 32)
+  )
 
-  private def cleanUp() = {
-    def deleteDir(dir: File): Unit = {
+  private def cleanUp(): Unit = {
+    def deleteDir(dir: File): Unit =
       if (dir.exists()) {
         dir.listFiles.foreach { f =>
           if (f.isDirectory)
@@ -40,13 +52,12 @@ object IndexingBenchmark extends App with DruidBootstrap {
         }
         Files.delete(dir.toPath)
       }
-    }
     stopDruidContainer()
     dataDir.toFile.listFiles.foreach(deleteDir)
     Thread.sleep(5000)
   }
 
-  private def startDruidAndWait() = {
+  private def startDruidAndWait(): Unit = {
     startDruidContainer()
     Thread.sleep(20000)
   }
@@ -56,22 +67,24 @@ object IndexingBenchmark extends App with DruidBootstrap {
       import Samples._
 
       import scala.concurrent.ExecutionContext.Implicits.global
-      val brokerClient = DruidClient.forQueryingBroker("localhost")(10.seconds, 1.minute)
+      val brokerClient   = DruidClient.forQueryingBroker("localhost")(10.seconds, 1.minute)
       val overlordClient = DruidClient.forIndexing("localhost")(10.seconds, 1.minute, 12.hours)
       startDruidAndWait()
       val f =
         RanDaGen
-          .run(100*1024*1000, size, Parallelism(4), JsonEventGenerator, FsEventConsumer(dataDir, compress = true), e)
+          .run(100 * 1024 * 1000, size, Parallelism(4), JsonEventGenerator, FsEventConsumer(dataDir, compress = true), e)
           .map { report =>
             println("Sample data generated...")
-            val from = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeZone.UTC)
-            val to = from.plus(size)
+            val from       = new DateTime(2015, 1, 1, 0, 0, 0, DateTimeZone.UTC)
+            val to         = from.plus(size)
             val segmentGrn = Granularity.HOUR
-            val intervals = segmentGrn.getIterable(from, to).map(_.toString).toList
-            val tasks = intervals.map( interval => hadoopTask(segmentGrn, List(interval), Granularity.HOUR, Granularity.HOUR, "yyyy/MM/dd/HH", dataDir.toAbsolutePath.toString) )
-            val start = System.currentTimeMillis()
+            val intervals  = segmentGrn.getIterable(from, to).map(_.toString).toList
+            val tasks = intervals.map(interval =>
+              hadoopTask(segmentGrn, List(interval), Granularity.HOUR, Granularity.HOUR, "yyyy/MM/dd/HH", dataDir.toAbsolutePath.toString)
+            )
+            val start   = System.currentTimeMillis()
             val results = Await.result(overlordClient.postTasksConcurrently(1, tasks.toIndexedSeq)(), 20.hours)
-            val took = System.currentTimeMillis() - start
+            val took    = System.currentTimeMillis() - start
             Thread.sleep(60000)
             val queryResponses =
               List(countTimeSeries(intervals), hllTimeSeries(intervals), sumTimeSeries(intervals))
@@ -98,9 +111,9 @@ case class IndexingBenchResult(totalSize: Int, tookTotal: Long, queryResponses: 
     symbols.setGroupingSeparator(' ')
     new DecimalFormat("#,###", symbols)
   }
-  override def toString = {
+  override def toString: String = {
     def scale(value: Double) = BigDecimal(value).setScale(2, HALF_UP)
-    val throughputTotal = totalSize / (tookTotal/1000D)
+    val throughputTotal      = totalSize / (tookTotal / 1000d)
     s"""
        |DATA GENERATOR
        |$report
@@ -110,7 +123,7 @@ case class IndexingBenchResult(totalSize: Int, tookTotal: Long, queryResponses: 
        |tasks : ${results.size}
        |crashed tasks : ${results.count(_.isFailure)}
        |failed tasks : ${results.filter(_.isSuccess).count(_.get.status.statusCode != TaskStatus.SUCCESS)}
-       |took total: ${scale(tookTotal/1000)} s
+       |took total: ${scale(tookTotal / 1000)} s
        |throughput: ${scale(throughputTotal)} events/s
        |query responses: ${queryResponses.mkString("\n", "\n--------------------------------------------------\n", "\n")}
        |errors: ${results.filter(_.isSuccess).flatMap(_.get.errors).mkString("\n")}

@@ -30,8 +30,10 @@ lazy val IntegrationConf = config("it") extend Test
 lazy val `druid4s-client` = (project in file("client"))
   .settings(libraryDependencies ++= Seq(randagen, scalaHttp, loggingImplLogback % "test", scalatest) ++ jackson)
   .settings(bintraySettings("GlobalWebIndex", "druid4s"))
-  .configs(IntegrationConf)
-  .settings(Defaults.itSettings)
+  .settings(
+    Defaults.itSettings,
+    inConfig(IntegrationConf)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings)
+  )
   .settings(
     envVars in Test := Map(
       "BROKER_HOST"  -> sys.env.getOrElse("BROKER_HOST", "localhost"),

@@ -1,14 +1,14 @@
 package gwi.druid.client
 
 /** A.G.G.R.E.G.A.T.I.O.N **/
-
 sealed trait Aggregation {
   def `type`: String
   def name: String
 }
-case class CountAggregator(`type`: String, name: String) extends Aggregation
+case class CountAggregator(`type`: String, name: String)                      extends Aggregation
 case class NumericAggregator(`type`: String, name: String, fieldName: String) extends Aggregation
-case class JavaScriptAggregator(`type`: String, name: String, fieldNames: List[String], fnAggregate: String, fnCombine: String, fnReset: String) extends Aggregation
+case class JavaScriptAggregator(`type`: String, name: String, fieldNames: List[String], fnAggregate: String, fnCombine: String, fnReset: String)
+    extends Aggregation
 case class CardinalityAggregator(`type`: String, name: String, fieldNames: List[String], byRow: Option[Boolean] = Option.empty) extends Aggregation
 case class FilteredAggregator(`type`: String, filter: Filter, aggregator: Aggregation)
 object Aggregation {
