@@ -25,7 +25,18 @@ lazy val `druid4s-utils` = (project in file("utils"))
   .settings(libraryDependencies ++= jodaTime :+ scalatest)
   .settings(bintraySettings("GlobalWebIndex", "druid4s"))
 
+lazy val IntegrationConf = config("it") extend Test
+
 lazy val `druid4s-client` = (project in file("client"))
   .settings(libraryDependencies ++= Seq(randagen, scalaHttp, loggingImplLogback % "test", scalatest) ++ jackson)
   .settings(bintraySettings("GlobalWebIndex", "druid4s"))
+  .configs(IntegrationConf)
+  .settings(Defaults.itSettings)
+  .settings(
+    envVars in Test := Map(
+      "BROKER_HOST"  -> sys.env.getOrElse("BROKER_HOST", "localhost"),
+      "OVERLORD_HOST"  -> sys.env.getOrElse("OVERLORD_HOST", "localhost"),
+      "COORDINATOR_HOST"  -> sys.env.getOrElse("COORDINATOR_HOST", "localhost")
+    )
+  )
   .dependsOn(`druid4s-utils` % "compile->compile;test->test")

@@ -3,15 +3,15 @@ import sbt._
 object Dependencies {
 
   val randagenVersion   = "0.2.7"
-  val jacksonVersion    = "2.10.1"
+  val jacksonVersion    = "2.10.3"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
   lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                        % "2.4.2"
-  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.1.0"         % "test"
+  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.1.1"         % "test"
 
   lazy val loggingApi                   = Seq(
-    "org.slf4j"                     %     "slf4j-api"                             % "1.7.29",
+    "org.slf4j"                     %     "slf4j-api"                             % "1.7.30",
     "com.typesafe.scala-logging"    %%    "scala-logging"                         % "3.9.2"
   )
 
