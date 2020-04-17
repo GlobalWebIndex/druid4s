@@ -14,6 +14,8 @@ object HttpClient {
 
   def request(url: String, extraAttempts: Int = 0, recoverySleep: Int = 5000)(buildRequest: HttpRequest => HttpRequest): Try[String] = {
     val redirectCodes = Set(301, 302, 303, 305, 307)
+
+    @scala.annotation.tailrec
     def executeRepeatedly(url: String, remainingAttempts: Int, authOpt: Option[HttpClientAuth]): Try[String] = {
       Try(buildRequest(authOpt.fold(Http(url)) { case HttpClientAuth(u,p) => Http(url).auth(u,p) }).asString) match {
         case f@Failure(ex) =>

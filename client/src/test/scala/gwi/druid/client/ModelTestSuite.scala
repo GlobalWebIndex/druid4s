@@ -5,10 +5,10 @@ import org.scalatest.{FreeSpec, Matchers}
 
 class ModelTestSuite extends FreeSpec with ScalaFutures with Matchers {
 
-  val s = "string"
-  val ss = List("string")
+  private val s = "string"
+  private val ss = List("string")
 
-  def printJson(q: Query) = println {
+  private def printJson(q: Query): Unit = println {
     ObjMapper.prettyWriter.writeValueAsString(q)
   }
 

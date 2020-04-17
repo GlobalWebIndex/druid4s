@@ -4,7 +4,7 @@ import java.util.concurrent.Executors
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.util.{DefaultPrettyPrinter, MinimalPrettyPrinter}
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{ObjectMapper, ObjectReader, ObjectWriter}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import gwi.druid.client.DruidClient.{Broker, Coordinator, Overlord, Plyql}
@@ -25,7 +25,7 @@ import scala.collection.breakOut
 
 case class DruidClientException(msg: String, status: String, optCause: Option[Throwable] = None) extends Exception(msg, optCause.orNull)
 case class IndexingTaskResult(status: TaskStatus, errors: List[String]) {
-  override def toString =
+  override def toString: String =
   s"""
      |status: $status
      |${errors.mkString("\n")}
@@ -38,14 +38,14 @@ case class IndexingTaskResult(status: TaskStatus, errors: List[String]) {
 object ObjMapper extends ObjectMapper with ScalaObjectMapper {
   setSerializationInclusion(JsonInclude.Include.NON_NULL)
   registerModule(DefaultScalaModule)
-  val prettyWriter  = writer(new DefaultPrettyPrinter)
-  val miniWriter    = writer(new MinimalPrettyPrinter)
-  val mapReader     = readerFor[Map[String, String]]
+  val prettyWriter: ObjectWriter = writer(new DefaultPrettyPrinter)
+  val miniWriter: ObjectWriter = writer(new MinimalPrettyPrinter)
+  val mapReader: ObjectReader = readerFor[Map[String, String]]
 }
 
 case class DruidUrl(protocol: String, host: String, port: Int, endpoint: String) {
-  def baseUrl = s"$protocol://$host:$port"
-  def url = s"$baseUrl/$endpoint"
+  def baseUrl: String = s"$protocol://$host:$port"
+  def url: String = s"$baseUrl/$endpoint"
 }
 
 sealed trait DruidClient {
@@ -61,16 +61,16 @@ object DruidClient extends DruidClient {
   private def defaultTimeout(connTimeout: FiniteDuration, readTimeout: FiniteDuration)(req: HttpRequest) =
     req.timeout(connTimeout.toMillis.toInt, readTimeout.toMillis.toInt)
 
-  def forIndexing(host: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration) =
+  def forIndexing(host: String, port: Int = 8090, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration): Overlord =
     Overlord(DruidUrl(protocol, host, port, "druid/indexer/v1/task"), indexingTimeout, defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker =
     Broker(DruidUrl(protocol, host, port, "druid/v2"), defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator =
     Coordinator(DruidUrl(protocol, host, port, "druid/coordinator/v1"), defaultTimeout(connTimeout, readTimeout))
 
-  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration) =
+  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http")(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql =
     Plyql(DruidUrl(protocol, host, port, "plyql"), defaultTimeout(connTimeout, readTimeout))
 
   case class Overlord private[DruidClient](druidUrl: DruidUrl, indexingTimeout: FiniteDuration, requestWithTimeouts: HttpRequest => HttpRequest) {
@@ -109,7 +109,7 @@ object DruidClient extends DruidClient {
         }
       }
 
-      def partitionTasks = {
+      def partitionTasks: IndexedSeq[IndexedSeq[IndexTask]] = {
         def partitionIntervals(length: Int, partitionCount: Int): IndexedSeq[(Int, Int)] = {
           require(length/partitionCount >= 2, s"Partitioning makes sense only if length/partitionCount is greater or equal to 2 ... $length/$partitionCount is not !!!")
           val partsSizes = ArrayBuffer.fill(Math.min(length, partitionCount))(length / partitionCount)

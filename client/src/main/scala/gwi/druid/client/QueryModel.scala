@@ -75,9 +75,9 @@ case class IncludeAll(`type`: String) extends ToInclude
 case class IncludeNone(`type`: String) extends ToInclude
 case class IncludeList(`type`: String, columns: List[String]) extends ToInclude
 object ToInclude {
-  def all = IncludeAll("all")
-  def none = IncludeNone("none")
-  def list(columns: List[String]) = IncludeList("list", columns)
+  def all: IncludeAll = IncludeAll("all")
+  def none: IncludeNone = IncludeNone("none")
+  def list(columns: List[String]): IncludeList = IncludeList("list", columns)
 }
 
 case class SegmentMetadataQuery(

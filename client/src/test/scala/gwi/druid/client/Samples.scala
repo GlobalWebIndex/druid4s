@@ -6,6 +6,7 @@ import gwi.randagen.SampleEventDefFactory
 import scala.util.{Failure, Success, Try}
 
 object Samples {
+
   import SampleEventDefFactory._
 
   val dataSource = "gwiq"
@@ -17,7 +18,7 @@ object Samples {
   val countByPurchaseAggName = "countByPurchase"
   val uuidHllAggName = "uuidHll"
 
-  def hadoopTask(segmentGrn: Granularity, segmentIntervals: List[String], queryGrn: Granularity, dataGrn: Granularity, pathFormat: String, inputPath: String) =
+  def hadoopTask(segmentGrn: Granularity, segmentIntervals: List[String], queryGrn: Granularity, dataGrn: Granularity, pathFormat: String, inputPath: String): IndexTask =
     IndexTask(
       IndexTask.hadoopType,
       IngestionSpec(
@@ -41,30 +42,37 @@ object Samples {
     )
 
   /** Note that count aggregation must be longSummed otherwise you'd get segment metadata size - very peculiar */
-  def countTimeSeries(intervals: List[String], granularity: String = queryGranularityALL) =
+  def countTimeSeries(intervals: List[String], granularity: String = queryGranularityALL): TimeSeriesQuery =
     Query.timeSeries(dataSource, granularity, intervals, List(Aggregation.longSum(countAggName, countAggName)))
-  def rawSelect(intervals: List[String], granularity: String = queryGranularityALL) =
-    Query.select(dataSource, granularity, intervals, PagingSpec(Map.empty, 20*1000))
-  def rawScan(intervals: List[String]) =
+
+  def rawSelect(intervals: List[String], granularity: String = queryGranularityALL): SelectQuery =
+    Query.select(dataSource, granularity, intervals, PagingSpec(Map.empty, 20 * 1000))
+
+  def rawScan(intervals: List[String]): ScanQuery =
     Query.scan(dataSource, intervals)
-  def hllTimeSeries(intervals: List[String], granularity: String = queryGranularityALL) =
+
+  def hllTimeSeries(intervals: List[String], granularity: String = queryGranularityALL): TimeSeriesQuery =
     Query.timeSeries(dataSource, granularity, intervals, List(Aggregation.hll(uuidHllAggName, uuidHllAggName)))
-  def sumTimeSeries(intervals: List[String], granularity: String = queryGranularityALL) =
+
+  def sumTimeSeries(intervals: List[String], granularity: String = queryGranularityALL): TimeSeriesQuery =
     Query.timeSeries(dataSource, granularity, intervals, List(Aggregation.longSum(idxSumAggName, idxSumAggName)))
-  def groupBy(intervals: List[String], granularity: String = queryGranularityALL) =
+
+  def groupBy(intervals: List[String], granularity: String = queryGranularityALL): GroupByQuery =
     Query.groupBy(dataSource, granularity, intervals, List(Aggregation.count(countByPurchaseAggName)), List(purchaseFieldName))
-  def segmentMetadata(intervals: List[String], granularity: String = queryGranularityALL) =
+
+  def segmentMetadata(intervals: List[String], granularity: String = queryGranularityALL): SegmentMetadataQuery =
     Query.segmentMetadata(dataSource, intervals)
-  def topN(intervals: List[String], granularity: String = queryGranularityALL) =
+
+  def topN(intervals: List[String], granularity: String = queryGranularityALL): TopNQuery =
     Query.topN(dataSource, granularity, intervals, List(Aggregation.count(priceSumAggName)), purchaseFieldName, TopNMetric.numeric(priceSumAggName), 5)
 
-  def deleteSegmentsIn(dataSource: String, interval: String, coordinatorIp: String) = {
+  def deleteSegmentsIn(dataSource: String, interval: String, coordinatorIp: String): Unit = {
     import scala.concurrent.duration._
     val client =
       DruidClient
         .forQueryingCoordinator(coordinatorIp)(5.seconds, 10.seconds)
 
-    def deleteSegments() =
+    def deleteSegments(): Unit =
       client
         .listOverlappingSegments(dataSource, List(interval))
         .get
@@ -74,18 +82,18 @@ object Samples {
           println(identifier)
         }
 
-      println("Deleting segments ...")
-      Try(deleteSegments()).flatMap { _ =>
-        println("Waiting for coordinator to notice and process deleted segments ...")
-        Thread.sleep(125*1000)
-        client.deleteInterval(dataSource, interval)
-      } match {
-        case Success(response) =>
-          println(s"Segments deleted, response :\n$response")
-        case Failure(ex) =>
-          println("Segment deletion failed")
-          throw ex
-      }
+    println("Deleting segments ...")
+    Try(deleteSegments()).flatMap { _ =>
+      println("Waiting for coordinator to notice and process deleted segments ...")
+      Thread.sleep(125 * 1000)
+      client.deleteInterval(dataSource, interval)
+    } match {
+      case Success(response) =>
+        println(s"Segments deleted, response :\n$response")
+      case Failure(ex) =>
+        println("Segment deletion failed")
+        throw ex
+    }
 
   }
 }

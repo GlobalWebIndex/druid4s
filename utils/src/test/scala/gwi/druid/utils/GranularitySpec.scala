@@ -3,9 +3,11 @@ package gwi.druid.utils
 import java.util.TimeZone
 
 import org.joda.time._
-import org.scalatest.{FreeSpec, Matchers}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class GranularitySpec extends FreeSpec with Matchers {
+class GranularitySpec extends AnyFreeSpec with Matchers {
+
   import Granularity._
 
   "testGetUnits" in {
@@ -113,12 +115,19 @@ class GranularitySpec extends FreeSpec with Matchers {
     private val start = new DateTime(2001, 1, 1, 0, 0, 0, 0)
     private val end = start.plusYears(years).plusMonths(months).plusDays(days).plusHours(hours).plusMinutes(minutes).plusSeconds(seconds).plusMillis(millis)
     val interval = new Interval(start, end)
-    def getYears: Int   = Years.yearsIn(interval).getYears
-    def getMonths: Int  = Months.monthsIn(interval).getMonths
-    def getWeeks: Int   = Weeks.weeksIn(interval).getWeeks
-    def getDays: Int    = Days.daysIn(interval).getDays
-    def getHours: Int   = Hours.hoursIn(interval).getHours
+
+    def getYears: Int = Years.yearsIn(interval).getYears
+
+    def getMonths: Int = Months.monthsIn(interval).getMonths
+
+    def getWeeks: Int = Weeks.weeksIn(interval).getWeeks
+
+    def getDays: Int = Days.daysIn(interval).getDays
+
+    def getHours: Int = Hours.hoursIn(interval).getHours
+
     def getMinutes: Int = Minutes.minutesIn(interval).getMinutes
+
     def getSeconds: Int = Seconds.secondsIn(interval).getSeconds
   }
 

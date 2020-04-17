@@ -12,15 +12,16 @@ import org.joda.time.{Days, _}
 trait Granularity {
 
   override def toString: String = getClass.getSimpleName.stripSuffix("$")
+
   def value: String
   def getUnits(n: Int): ReadablePeriod
   def truncate(time: DateTime): DateTime
   def numIn(interval: ReadableInterval): Int
   def arity: Int
 
-  def increment(time: DateTime): DateTime = time.plus(getUnits(1))
+  def increment(time: DateTime): DateTime = increment(time, 1)
   def increment(time: DateTime, count: Int): DateTime = time.plus(getUnits(count))
-  def decrement(time: DateTime): DateTime = time.minus(getUnits(1))
+  def decrement(time: DateTime): DateTime = decrement(time, 1)
   def decrement(time: DateTime, count: Int): DateTime = time.minus(getUnits(count))
   def getIterable(start: DateTime, end: DateTime): Iterable[Interval] = getIterable(new Interval(start, end))
   def getIterable(input: Interval): Iterable[Interval] = new IntervalIterable(input)
@@ -44,7 +45,7 @@ trait Granularity {
   }
 
   class IntervalIterable(inputInterval: Interval) extends Iterable[Interval] {
-    def iterator = new Iterator[Interval] {
+    def iterator: Iterator[Interval] = new Iterator[Interval] {
       private var currStart = truncate(inputInterval.getStart)
       private var currEnd = increment(currStart)
 
@@ -63,7 +64,7 @@ trait Granularity {
   }
 
   class ReverseIntervalIterable(inputInterval: Interval) extends Iterable[Interval] {
-    def iterator = new Iterator[Interval] {
+    def iterator: Iterator[Interval] = new Iterator[Interval] {
       private var currEnd = inputInterval.getEnd
       private var currStart = decrement(currEnd)
 

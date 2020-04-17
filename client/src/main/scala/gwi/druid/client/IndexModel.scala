@@ -86,9 +86,8 @@ object InputSpec {
     StaticInputSpec("static", paths)
   def granularity(dataGranularity: String, inputPath: String, filePattern: String, pathFormat: Option[String] = Option.empty): GranularityInputSpec =
     GranularityInputSpec("granularity", dataGranularity, inputPath, filePattern, pathFormat)
-  def dataSource(ingestionSpec: IngestionUpdateSpec, maxSplitSize: Option[Int] = Option.empty) =
+  def dataSource(ingestionSpec: IngestionUpdateSpec, maxSplitSize: Option[Int] = Option.empty): DataSourceInputSpec =
     DataSourceInputSpec("dataSource", ingestionSpec, maxSplitSize)
-  def multi = ???
 }
 
 // TODO https://github.com/druid-io/druid/blob/master/docs/content/ingestion/firehose.md

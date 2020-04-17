@@ -29,7 +29,7 @@ object IndexingBenchmark extends App with DruidBootstrap {
   runBench("6_6_16", List(432000,864000), SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 6, dynamicMaxFieldCount = 6, dynamicDataPointsCount = 16))
   runBench("8_8_32", List(432000,864000), SampleEventDefFactory(ChronoUnit.MILLIS, dynamicMaxSegmentSize = 8, dynamicMaxFieldCount = 8, dynamicDataPointsCount = 32))
 
-  private def cleanUp() = {
+  private def cleanUp(): Unit = {
     def deleteDir(dir: File): Unit = {
       if (dir.exists()) {
         dir.listFiles.foreach { f =>
@@ -46,7 +46,7 @@ object IndexingBenchmark extends App with DruidBootstrap {
     Thread.sleep(5000)
   }
 
-  private def startDruidAndWait() = {
+  private def startDruidAndWait(): Unit = {
     startDruidContainer()
     Thread.sleep(20000)
   }
@@ -98,7 +98,7 @@ case class IndexingBenchResult(totalSize: Int, tookTotal: Long, queryResponses: 
     symbols.setGroupingSeparator(' ')
     new DecimalFormat("#,###", symbols)
   }
-  override def toString = {
+  override def toString: String = {
     def scale(value: Double) = BigDecimal(value).setScale(2, HALF_UP)
     val throughputTotal = totalSize / (tookTotal/1000D)
     s"""
