@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   val randagenVersion   = "0.2.7"
-  val jacksonVersion    = "2.10.3"
+  val jacksonVersion    = "2.11.0"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
