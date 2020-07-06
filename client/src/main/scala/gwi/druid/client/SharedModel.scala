@@ -1,6 +1,6 @@
 package gwi.druid.client
 
-/** A.G.G.R.E.G.A.T.I.O.N **/
+/** A.G.G.R.E.G.A.T.I.O.N * */
 sealed trait Aggregation {
   def `type`: String
   def name: String

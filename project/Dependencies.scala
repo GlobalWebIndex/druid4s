@@ -2,13 +2,13 @@ import sbt._
 
 object Dependencies {
 
-  val randagenVersion   = "0.2.7"
-  val jacksonVersion    = "2.10.3"
+  val randagenVersion   = "0.2.9"
+  val jacksonVersion    = "2.11.1"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
   lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                        % "2.4.2"
-  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.1.1"         % "test"
+  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.1.2"         % "test"
 
   lazy val loggingApi                   = Seq(
     "org.slf4j"                     %     "slf4j-api"                             % "1.7.30",
@@ -16,7 +16,7 @@ object Dependencies {
   )
 
   lazy val jodaTime                     = Seq(
-    "joda-time"                     %     "joda-time"                             % "2.10.5",
+    "joda-time"                     %     "joda-time"                             % "2.10.6",
     "org.joda"                      %     "joda-convert"                          % "2.2.1"
   )
 

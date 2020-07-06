@@ -1,6 +1,6 @@
 package gwi.druid.client
 
-/** F.I.L.T.E.R.S **/
+/** F.I.L.T.E.R.S * */
 sealed trait Filter {
   def `type`: String
 }
@@ -17,7 +17,7 @@ object Filter {
   def logicalNot(fields: List[Filter]): LogicalFilter                   = LogicalFilter("not", fields)
 }
 
-/** P.O.S.T   A.G.G.R.E.G.A.T.I.O.N.S **/
+/** P.O.S.T   A.G.G.R.E.G.A.T.I.O.N.S * */
 sealed trait PostAggregation {
   def `type`: String
   def name: String
@@ -41,7 +41,7 @@ object PostAggregation {
     HLLPostAggregation("hyperUniqueCardinality", name, fieldName)
 }
 
-/** Q.U.E.R.Y   C.O.N.T.E.X.T **/
+/** Q.U.E.R.Y   C.O.N.T.E.X.T * */
 case class Context(
     timeout: Option[Int] = Option.empty,
     priority: Option[Int] = Option.empty,
@@ -58,10 +58,10 @@ sealed trait Query {
   def context: Option[Context]
 }
 
-/** T.I.M.E   B.O.U.N.D.A.R.Y   Q.U.E.R.Y **/
+/** T.I.M.E   B.O.U.N.D.A.R.Y   Q.U.E.R.Y * */
 case class TimeBoundaryQuery(queryType: String, dataSource: String, bound: Option[String] = Option.empty, context: Option[Context] = Option.empty) extends Query
 
-/** S.E.G.M.E.N.T   M.E.T.A.D.A.T.A   Q.U.E.R.Y **/
+/** S.E.G.M.E.N.T   M.E.T.A.D.A.T.A   Q.U.E.R.Y * */
 sealed trait ToInclude {
   def `type`: String
 }
@@ -103,11 +103,11 @@ case class SegmentMetadataResponse(
     rollup: Option[Boolean]
 ) extends Response
 
-/** D.A.T.A  S.O.U.R.C.E  M.E.T.A.D.A.T.A   Q.U.E.R.Y **/
+/** D.A.T.A  S.O.U.R.C.E  M.E.T.A.D.A.T.A   Q.U.E.R.Y * */
 case class DataSourceMetadataQuery(queryType: String, dataSource: String, context: Option[Context] = Option.empty) extends Query
 case class DataSourceMetadataResponse(timestamp: String)                                                           extends Response
 
-/** T.I.M.E.S.E.R.I.E.S   Q.U.E.R.Y **/
+/** T.I.M.E.S.E.R.I.E.S   Q.U.E.R.Y * */
 case class TimeSeriesQuery(
     queryType: String,
     dataSource: String,
@@ -117,10 +117,10 @@ case class TimeSeriesQuery(
     filter: Option[Filter] = Option.empty,
     postAggregation: Option[PostAggregation] = Option.empty,
     context: Option[Context] = Option.empty
-) extends Query
+)                                                                             extends Query
 case class TimeSeriesResponse(timestamp: String, result: Map[String, Double]) extends Response
 
-/** G.R.O.U.P.B.Y   Q.U.E.R.Y **/
+/** G.R.O.U.P.B.Y   Q.U.E.R.Y * */
 sealed trait GroupByLimitSpec
 case class GroupByDefaultLimit(`type`: String, limit: Int, columns: List[String]) extends GroupByLimitSpec
 case class OrderByColumnLimit(dimension: String, direction: String)               extends GroupByLimitSpec
@@ -157,10 +157,10 @@ case class GroupByQuery(
     filter: Option[Filter] = Option.empty,
     postAggregation: Option[PostAggregation] = Option.empty,
     context: Option[Context] = Option.empty
-) extends Query
+)                                                                                       extends Query
 case class GroupByResponse(timestamp: String, version: String, event: Map[String, Any]) extends Response
 
-/** T.O.P.N   Q.U.E.R.Y **/
+/** T.O.P.N   Q.U.E.R.Y * */
 // TODO http://druid.io/docs/latest/querying/dimensionspecs.html
 
 sealed trait TopNMetric {
@@ -187,7 +187,7 @@ case class TopNQuery(
     metric: TopNMetric,
     threshold: Int,
     context: Option[Context] = Option.empty
-) extends Query
+)                                                                                extends Query
 case class TopNResponse(timestamp: String, result: IndexedSeq[Map[String, Any]]) extends Response
 
 /** S.C.A.N   Q.U.E.R.Y */
@@ -213,7 +213,7 @@ case class ScanQuery(
 
 case class ScanResponse(segmentId: String, columns: List[String], events: IndexedSeq[Map[String, Any]]) extends Response
 
-/** S.E.L.E.C.T   Q.U.E.R.Y **/
+/** S.E.L.E.C.T   Q.U.E.R.Y * */
 case class PagingSpec(pagingIdentifiers: Map[String, Int], threshold: Int)
 case class SelectQuery(
     queryType: String,

@@ -79,9 +79,8 @@ object IndexingBenchmark extends App with DruidBootstrap {
             val to         = from.plus(size)
             val segmentGrn = Granularity.HOUR
             val intervals  = segmentGrn.getIterable(from, to).map(_.toString).toList
-            val tasks = intervals.map(interval =>
-              hadoopTask(segmentGrn, List(interval), Granularity.HOUR, Granularity.HOUR, "yyyy/MM/dd/HH", dataDir.toAbsolutePath.toString)
-            )
+            val tasks = intervals
+              .map(interval => hadoopTask(segmentGrn, List(interval), Granularity.HOUR, Granularity.HOUR, "yyyy/MM/dd/HH", dataDir.toAbsolutePath.toString))
             val start   = System.currentTimeMillis()
             val results = Await.result(overlordClient.postTasksConcurrently(1, tasks.toIndexedSeq)(), 20.hours)
             val took    = System.currentTimeMillis() - start

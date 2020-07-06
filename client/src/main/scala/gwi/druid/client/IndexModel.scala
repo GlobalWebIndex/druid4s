@@ -20,7 +20,7 @@ case class DelimitedParseSpec(
     hasHeaderRow: Boolean,
     skipHeaderRows: Int,
     listDelimiter: Option[String] = Option.empty
-) extends ParseSpec
+)                                                                                                      extends ParseSpec
 case class JsonParseSpec(format: String, timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec) extends ParseSpec
 object ParseSpec {
   def timeAndDims(timestampSpec: TimestampSpec, dimensionsSpec: DimensionsSpec): TimeAndDimsParseSpec =
