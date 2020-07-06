@@ -83,7 +83,7 @@ object Samples {
     import scala.concurrent.duration._
     val client =
       DruidClient
-        .forQueryingCoordinator(coordinatorIp)(5.seconds, 10.seconds)
+        .forQueryingCoordinator(coordinatorIp, headers = Seq.empty)(5.seconds, 10.seconds)
 
     def deleteSegments(): Unit =
       client

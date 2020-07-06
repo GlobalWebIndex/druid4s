@@ -33,11 +33,11 @@ class DruidIntegrationTestSuite extends AnyFreeSpec with ScalaFutures with Match
   private val coordinatorHost: String = sys.env.getOrElse("COORDINATOR_HOST", throw new IllegalStateException(s"COORDINATOR_HOST env var must be defined !!!"))
 
   lazy private val brokerClient =
-    DruidClient.forQueryingBroker(brokerHost)(5.seconds, 1.minute)
+    DruidClient.forQueryingBroker(brokerHost, headers = Seq.empty)(5.seconds, 1.minute)
   lazy private val overlordClient =
-    DruidClient.forIndexing(overlordHost)(5.seconds, 5.seconds, 3.minute)
+    DruidClient.forIndexing(overlordHost, headers = Seq.empty)(5.seconds, 5.seconds, 3.minute)
   lazy private val coordinatorClient =
-    DruidClient.forQueryingCoordinator(coordinatorHost)(10.seconds, 30.seconds)
+    DruidClient.forQueryingCoordinator(coordinatorHost, headers = Seq.empty)(10.seconds, 30.seconds)
 
   require(brokerClient.isHealthy.get, "Broker is not healthy !!!")
   require(overlordClient.isHealthy.get, "Overlord is not healthy !!!")

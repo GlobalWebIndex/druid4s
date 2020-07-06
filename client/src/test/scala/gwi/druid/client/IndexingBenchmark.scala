@@ -67,8 +67,8 @@ object IndexingBenchmark extends App with DruidBootstrap {
       import Samples._
 
       import scala.concurrent.ExecutionContext.Implicits.global
-      val brokerClient   = DruidClient.forQueryingBroker("localhost")(10.seconds, 1.minute)
-      val overlordClient = DruidClient.forIndexing("localhost")(10.seconds, 1.minute, 12.hours)
+      val brokerClient   = DruidClient.forQueryingBroker("localhost", headers = Seq.empty)(10.seconds, 1.minute)
+      val overlordClient = DruidClient.forIndexing("localhost", headers = Seq.empty)(10.seconds, 1.minute, 12.hours)
       startDruidAndWait()
       val f =
         RanDaGen
