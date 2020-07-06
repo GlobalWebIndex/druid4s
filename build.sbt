@@ -14,7 +14,8 @@ initialize := {
 
 resolvers in ThisBuild ++= Seq(
   "Maven Central Google Mirror EU" at "https://maven-central-eu.storage-download.googleapis.com/repos/central/data/",
-  Resolver.bintrayRepo("l15k4", "GlobalWebIndex")
+  Resolver.bintrayRepo("l15k4", "GlobalWebIndex"),
+  Resolver.bintrayRepo("gwidx", "maven")
 )
 version in ThisBuild ~= (_.replace('+', '-'))
 dynver in ThisBuild ~= (_.replace('+', '-'))
