@@ -56,41 +56,41 @@ trait Granularity {
   }
 
   class IntervalIterable(inputInterval: Interval) extends Iterable[Interval] {
-    def iterator: Iterator[Interval] = new Iterator[Interval] {
-      private var currStart = truncate(inputInterval.getStart)
-      private var currEnd   = increment(currStart)
+    def iterator: Iterator[Interval] =
+      new Iterator[Interval] {
+        private var currStart = truncate(inputInterval.getStart)
+        private var currEnd   = increment(currStart)
 
-      def hasNext: Boolean = currStart.isBefore(inputInterval.getEnd)
+        def hasNext: Boolean = currStart.isBefore(inputInterval.getEnd)
 
-      def next: Interval = {
-        if (!hasNext) {
-          throw new NoSuchElementException("There are no more intervals")
+        def next: Interval = {
+          if (!hasNext)
+            throw new NoSuchElementException("There are no more intervals")
+          val retVal = new Interval(currStart, currEnd)
+          currStart = currEnd
+          currEnd = increment(currStart)
+          retVal
         }
-        val retVal = new Interval(currStart, currEnd)
-        currStart = currEnd
-        currEnd = increment(currStart)
-        retVal
       }
-    }
   }
 
   class ReverseIntervalIterable(inputInterval: Interval) extends Iterable[Interval] {
-    def iterator: Iterator[Interval] = new Iterator[Interval] {
-      private var currEnd   = inputInterval.getEnd
-      private var currStart = decrement(currEnd)
+    def iterator: Iterator[Interval] =
+      new Iterator[Interval] {
+        private var currEnd   = inputInterval.getEnd
+        private var currStart = decrement(currEnd)
 
-      def hasNext: Boolean = currEnd.isAfter(inputInterval.getStart)
+        def hasNext: Boolean = currEnd.isAfter(inputInterval.getStart)
 
-      def next: Interval = {
-        if (!hasNext) {
-          throw new NoSuchElementException("There are no more intervals")
+        def next: Interval = {
+          if (!hasNext)
+            throw new NoSuchElementException("There are no more intervals")
+          val retVal = new Interval(currStart, currEnd)
+          currEnd = currStart
+          currStart = decrement(currEnd)
+          retVal
         }
-        val retVal = new Interval(currStart, currEnd)
-        currEnd = currStart
-        currStart = decrement(currEnd)
-        retVal
       }
-    }
   }
 
 }
@@ -104,14 +104,15 @@ object Granularity {
   val MINUTE: Minute = Minute("MINUTE")
   val SECOND: Second = Second("SECOND")
 
-  def apply(value: String): Granularity = value match {
-    case g if g == MONTH.value  => MONTH
-    case g if g == WEEK.value   => WEEK
-    case g if g == DAY.value    => DAY
-    case g if g == HOUR.value   => HOUR
-    case g if g == MINUTE.value => MINUTE
-    case g if g == SECOND.value => SECOND
-  }
+  def apply(value: String): Granularity =
+    value match {
+      case g if g == MONTH.value  => MONTH
+      case g if g == WEEK.value   => WEEK
+      case g if g == DAY.value    => DAY
+      case g if g == HOUR.value   => HOUR
+      case g if g == MINUTE.value => MINUTE
+      case g if g == SECOND.value => SECOND
+    }
 
   case class Month(value: String) extends Granularity {
     def arity = 2

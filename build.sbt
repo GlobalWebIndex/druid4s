@@ -3,7 +3,7 @@ import java.util.TimeZone
 import Dependencies._
 import Deploy._
 
-crossScalaVersions in ThisBuild := Seq("2.12.10", "2.11.8")
+crossScalaVersions in ThisBuild := Seq("2.12.11", "2.11.8")
 organization in ThisBuild := "net.globalwebindex"
 libraryDependencies in ThisBuild ++= loggingApi
 
@@ -14,7 +14,8 @@ initialize := {
 
 resolvers in ThisBuild ++= Seq(
   "Maven Central Google Mirror EU" at "https://maven-central-eu.storage-download.googleapis.com/repos/central/data/",
-  Resolver.bintrayRepo("l15k4", "GlobalWebIndex")
+  Resolver.bintrayRepo("l15k4", "GlobalWebIndex"),
+  Resolver.bintrayRepo("gwidx", "maven")
 )
 version in ThisBuild ~= (_.replace('+', '-'))
 dynver in ThisBuild ~= (_.replace('+', '-'))

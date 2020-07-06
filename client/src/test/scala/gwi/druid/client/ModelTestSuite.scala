@@ -9,9 +9,10 @@ class ModelTestSuite extends AnyFreeSpec with ScalaFutures with Matchers {
   private val s  = "string"
   private val ss = List("string")
 
-  private def printJson(q: Query): Unit = println {
-    ObjMapper.prettyWriter.writeValueAsString(q)
-  }
+  private def printJson(q: Query): Unit =
+    println {
+      ObjMapper.prettyWriter.writeValueAsString(q)
+    }
 
   "queries should serialize" in {
     List[Query](

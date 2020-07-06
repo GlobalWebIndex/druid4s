@@ -49,40 +49,55 @@ case class DruidUrl(protocol: String, host: String, port: Int, endpoint: String)
 }
 
 sealed trait DruidClient {
-  def forIndexing(host: String, port: Int = 8090, protocol: String = "http", headers: Seq[(String,String)])(
+  def forIndexing(host: String, port: Int = 8090, protocol: String = "http", headers: Seq[(String, String)])(
       connTimeout: FiniteDuration,
       readTimeout: FiniteDuration,
       indexingTimeout: FiniteDuration
   ): Overlord
-  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http", headers: Seq[(String,String)])
-                       (connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker
-  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http", headers: Seq[(String,String)])
-                            (connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator
-  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http", headers: Seq[(String,String)])
-                            (connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql
+  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http", headers: Seq[(String, String)])(
+      connTimeout: FiniteDuration,
+      readTimeout: FiniteDuration
+  ): Broker
+  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http", headers: Seq[(String, String)])(
+      connTimeout: FiniteDuration,
+      readTimeout: FiniteDuration
+  ): Coordinator
+  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http", headers: Seq[(String, String)])(
+      connTimeout: FiniteDuration,
+      readTimeout: FiniteDuration
+  ): Plyql
 }
 
 object DruidClient extends DruidClient {
   private val logger = LoggerFactory.getLogger("DruidClient")
 
-  private def defaultReq(headers: Seq[(String,String)], connTimeout: FiniteDuration, readTimeout: FiniteDuration)(req: HttpRequest) =
+  private def defaultReq(headers: Seq[(String, String)], connTimeout: FiniteDuration, readTimeout: FiniteDuration)(req: HttpRequest) =
     req.timeout(connTimeout.toMillis.toInt, readTimeout.toMillis.toInt).headers(headers)
 
   def forIndexing(
       host: String,
       port: Int = 8090,
       protocol: String = "http",
-      headers: Seq[(String,String)]
+      headers: Seq[(String, String)]
   )(connTimeout: FiniteDuration, readTimeout: FiniteDuration, indexingTimeout: FiniteDuration): Overlord =
     Overlord(DruidUrl(protocol, host, port, "druid/indexer/v1/task"), indexingTimeout, defaultReq(headers, connTimeout, readTimeout))
 
-  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http", headers: Seq[(String,String)])(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Broker =
+  def forQueryingBroker(host: String, port: Int = 8082, protocol: String = "http", headers: Seq[(String, String)])(
+      connTimeout: FiniteDuration,
+      readTimeout: FiniteDuration
+  ): Broker =
     Broker(DruidUrl(protocol, host, port, "druid/v2"), defaultReq(headers, connTimeout, readTimeout))
 
-  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http", headers: Seq[(String,String)])(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Coordinator =
+  def forQueryingCoordinator(host: String, port: Int = 8081, protocol: String = "http", headers: Seq[(String, String)])(
+      connTimeout: FiniteDuration,
+      readTimeout: FiniteDuration
+  ): Coordinator =
     Coordinator(DruidUrl(protocol, host, port, "druid/coordinator/v1"), defaultReq(headers, connTimeout, readTimeout))
 
-  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http", headers: Seq[(String,String)])(connTimeout: FiniteDuration, readTimeout: FiniteDuration): Plyql =
+  def forQueryingPlyqlServer(host: String, port: Int = 8099, protocol: String = "http", headers: Seq[(String, String)])(
+      connTimeout: FiniteDuration,
+      readTimeout: FiniteDuration
+  ): Plyql =
     Plyql(DruidUrl(protocol, host, port, "plyql"), defaultReq(headers, connTimeout, readTimeout))
 
   case class Overlord private[DruidClient] (druidUrl: DruidUrl, indexingTimeout: FiniteDuration, requestWithTimeouts: HttpRequest => HttpRequest) {
