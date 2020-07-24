@@ -40,7 +40,7 @@ steps:
   pull: default
   image: lustefaniak/sbt:graalvm11_1.3.4_2.13.1
   commands:
-  - sbt -color=always -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 druid4s-utils/publish druid4s-client/publish
+  - sbt -color=always -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 +druid4s-utils/publish +druid4s-client/publish
   environment:
     BINTRAY_PASS:
       from_secret: bintray_pass
