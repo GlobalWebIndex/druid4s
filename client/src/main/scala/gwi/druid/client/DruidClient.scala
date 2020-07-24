@@ -21,8 +21,6 @@ import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 import scalaj.http.HttpRequest
 
-import scala.collection.breakOut
-
 case class DruidClientException(msg: String, status: String, optCause: Option[Throwable] = None) extends Exception(msg, optCause.orNull)
 case class IndexingTaskResult(status: TaskStatus, errors: List[String]) {
   override def toString: String =
@@ -436,7 +434,7 @@ object DruidClient extends DruidClient {
         .map {
           _.map { presentIntervals =>
             val allIntervals = granularity.getIterable(range).toSet
-            (allIntervals -- presentIntervals).map(_.toString)(breakOut)
+            (allIntervals -- presentIntervals).map(_.toString).toVector
           }
         }
 
