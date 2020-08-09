@@ -8,7 +8,7 @@ object Dependencies {
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"
   lazy val loggingImplLogback           = "ch.qos.logback"                %     "logback-classic"                    % "1.2.3"
   lazy val scalaHttp                    = "org.scalaj"                    %%    "scalaj-http"                        % "2.4.2"
-  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.2.0"         % "test"
+  lazy val scalatest                    = "org.scalatest"                 %%    "scalatest"                          % "3.2.1"         % "test"
 
   lazy val loggingApi                   = Seq(
     "org.slf4j"                     %     "slf4j-api"                             % "1.7.30",
