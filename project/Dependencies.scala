@@ -16,7 +16,7 @@ object Dependencies {
   )
 
   lazy val jodaTime                     = Seq(
-    "joda-time"                     %     "joda-time"                             % "2.10.6",
+    "joda-time"                     %     "joda-time"                             % "2.10.10",
     "org.joda"                      %     "joda-convert"                          % "2.2.1"
   )
 
