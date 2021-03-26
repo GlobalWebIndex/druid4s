@@ -19,6 +19,7 @@ object Deploy {
     pomIncludeRepository := { _ =>
       false
     },
+    publishTo := Some("GitHub Package Registry" at s"https://maven.pkg.github.com/$ghOrganizationName/$ghProjectName"),
     credentials ++= sys.env.get("DMP_TEAM_GITHUB_TOKEN").map(Credentials("GitHub Package Registry", "maven.pkg.github.com", "dmp-team", _)),
     pomExtra :=
       <url>https://github.com/{ghOrganizationName}/{ghProjectName}</url>
