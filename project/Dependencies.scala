@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
 
-  val randagenVersion   = "0.3.0"
+  val randagenVersion   = "0.3.3"
   val jacksonVersion    = "2.11.1"
 
   lazy val randagen                     = "net.globalwebindex"            %%    "randagen-core"                      % randagenVersion % "test"

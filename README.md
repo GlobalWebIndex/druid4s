@@ -3,7 +3,8 @@
 [![Build Status](https://drone.globalwebindex.com/api/badges/GlobalWebIndex/druid4s/status.svg)](https://drone.in.globalwebindex.com/GlobalWebIndex/druid4s)
 
 ```
-"net.globalwebindex" %% "druid4s-client" % "x.y.z"
+resolvers ++= Seq("GitHub Package Registry (GlobalWebIndex/druid4s)" at s"https://maven.pkg.github.com/GlobalWebIndex/druid4s")
+libraryDependencies += "net.globalwebindex" %% "druid4s-client" % "x.y.z"
 ```
 or
 ```
