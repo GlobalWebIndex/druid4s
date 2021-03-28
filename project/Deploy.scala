@@ -1,9 +1,8 @@
-import bintray.BintrayKeys._
 import sbt.Keys._
 import sbt._
 
 object Deploy {
-  def bintraySettings(ghOrganizationName: String, ghProjectName: String) = Seq(
+  def settings(ghOrganizationName: String, ghProjectName: String) = Seq(
     publishArtifact := true,
     publishMavenStyle := true,
     publishArtifact in Test := false,
@@ -17,13 +16,11 @@ object Deploy {
     scmInfo := Some(
       ScmInfo(url(s"https://github.com/$ghOrganizationName/$ghProjectName"),
               s"git@github.com:$ghOrganizationName/$ghProjectName.git")),
-    bintrayVcsUrl := Some(
-      s"git@github.com:$ghOrganizationName/$ghProjectName.git"),
-    bintrayOrganization := Some("gwidx"),
-    bintrayRepository := "maven",
     pomIncludeRepository := { _ =>
       false
     },
+    publishTo := Some("GitHub Package Registry" at s"https://maven.pkg.github.com/$ghOrganizationName/$ghProjectName"),
+    credentials ++= sys.env.get("DMP_TEAM_GITHUB_TOKEN").map(Credentials("GitHub Package Registry", "maven.pkg.github.com", "dmp-team", _)),
     pomExtra :=
       <url>https://github.com/{ghOrganizationName}/{ghProjectName}</url>
         <licenses>
