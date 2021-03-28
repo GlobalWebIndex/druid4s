@@ -12,7 +12,7 @@ object Dependencies {
 
   lazy val loggingApi                   = Seq(
     "org.slf4j"                     %     "slf4j-api"                             % "1.7.30",
-    "com.typesafe.scala-logging"    %%    "scala-logging"                         % "3.9.2"
+    "com.typesafe.scala-logging"    %%    "scala-logging"                         % "3.9.3"
   )
 
   lazy val jodaTime                     = Seq(
