@@ -27,6 +27,8 @@ steps:
     BROKER_HOST: "druid-broker.qpipeline-s-0.gcp.in.globalwebindex.com"
     OVERLORD_HOST: "druid-overlord.qpipeline-s-0.gcp.in.globalwebindex.com"
     COORDINATOR_HOST: "druid-coordinator.qpipeline-s-0.gcp.in.globalwebindex.com"
+    DMP_TEAM_GITHUB_TOKEN:
+      from_secret: dmp_team_github_token
     TEST_CREDENTIALS:
       from_secret: sa_qpipeline_s
   volumes:
@@ -42,10 +44,8 @@ steps:
   commands:
   - sbt -color=always -Dsbt.ivy.home=/cache/.ivy2 -Divy.home=/cache/.ivy2 -Dfile.encoding=utf-8 +druid4s-utils/publish +druid4s-client/publish
   environment:
-    BINTRAY_PASS:
-      from_secret: bintray_pass
-    BINTRAY_USER:
-      from_secret: bintray_user
+    DMP_TEAM_GITHUB_TOKEN:
+      from_secret: dmp_team_github_token
   volumes:
   - name: sbt
     path: /cache
