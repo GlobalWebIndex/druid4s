@@ -1,7 +1,6 @@
 import java.util.TimeZone
 
 import Dependencies._
-import Deploy._
 
 crossScalaVersions in ThisBuild := Seq("2.13.3", "2.12.12")
 organization in ThisBuild := "net.globalwebindex"
@@ -14,8 +13,7 @@ initialize := {
 
 resolvers in ThisBuild ++= Seq(
   "Maven Central Google Mirror EU" at "https://maven-central-eu.storage-download.googleapis.com/repos/central/data/",
-  Resolver.bintrayRepo("l15k4", "GlobalWebIndex"),
-  Resolver.bintrayRepo("gwidx", "maven")
+  "GitHub Package Registry (GlobalWebIndex/randagen)" at s"https://maven.pkg.github.com/GlobalWebIndex/randagen"
 )
 version in ThisBuild ~= (_.replace('+', '-'))
 dynver in ThisBuild ~= (_.replace('+', '-'))
@@ -24,13 +22,13 @@ publishArtifact in ThisBuild := false
 
 lazy val `druid4s-utils` = (project in file("utils"))
   .settings(libraryDependencies ++= jodaTime :+ scalatest)
-  .settings(bintraySettings("GlobalWebIndex", "druid4s"))
+  .settings(Deploy.settings("GlobalWebIndex", "druid4s"))
 
 lazy val IntegrationConf = config("it") extend Test
 
 lazy val `druid4s-client` = (project in file("client"))
   .settings(libraryDependencies ++= Seq(randagen, scalaHttp, loggingImplLogback % "test", scalatest) ++ jackson)
-  .settings(bintraySettings("GlobalWebIndex", "druid4s"))
+  .settings(Deploy.settings("GlobalWebIndex", "druid4s"))
   .settings(
     Defaults.itSettings,
     inConfig(IntegrationConf)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings)
