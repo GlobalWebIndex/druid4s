@@ -2,7 +2,7 @@ import java.util.TimeZone
 
 import Dependencies._
 
-crossScalaVersions in ThisBuild := Seq("2.13.3", "2.12.12")
+crossScalaVersions in ThisBuild := Seq("2.13.3", "2.12.13")
 organization in ThisBuild := "net.globalwebindex"
 libraryDependencies in ThisBuild ++= loggingApi
 
